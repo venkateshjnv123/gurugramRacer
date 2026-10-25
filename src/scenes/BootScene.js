@@ -8,6 +8,7 @@ export default class BootScene extends Phaser.Scene {
 
   create() {
     this.makeBike();
+    this.makeUi();
     this.scene.start('Menu');
   }
 
@@ -17,6 +18,20 @@ export default class BootScene extends Phaser.Scene {
     drawFn(g);
     g.generateTexture(key, w, h);
     g.destroy();
+  }
+
+  makeUi() {
+    // destination ring
+    this.bake('target', 120, 120, (g) => {
+      g.lineStyle(8, 0x2ecc71, 1).strokeCircle(60, 60, 52);
+      g.lineStyle(3, 0xffffff, 0.9).strokeCircle(60, 60, 40);
+      g.fillStyle(0x2ecc71, 0.25).fillCircle(60, 60, 40);
+    });
+    // off-screen pointer, points RIGHT
+    this.bake('arrow', 40, 32, (g) => {
+      g.fillStyle(0x2ecc71).fillTriangle(0, 0, 40, 16, 0, 32);
+      g.lineStyle(3, 0xffffff).strokeTriangle(1, 1, 38, 16, 1, 31);
+    });
   }
 
   // All vehicle textures point UP (front at y = 0).
