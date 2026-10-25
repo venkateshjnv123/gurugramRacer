@@ -8,6 +8,8 @@ import Bike from '../objects/Bike.js';
 import TrafficSystem from '../systems/TrafficSystem.js';
 import EventSystem from '../systems/EventSystem.js';
 import Specials from '../systems/Specials.js';
+import NightFog from '../systems/NightFog.js';
+import { load } from '../systems/Save.js';
 
 const WIN_RADIUS = 80;
 
@@ -42,6 +44,9 @@ export default class GameScene extends Phaser.Scene {
 
     this.eventSys = new EventSystem(this);
     this.specials = new Specials(this);
+
+    const fog = m.night || load('ncrFog', false);
+    this.nightFog = m.night || fog ? new NightFog(this, { dark: m.night, fog }) : null;
 
     this.marker = this.add.image(this.target.x, this.target.y, 'target').setDepth(8);
     this.tweens.add({ targets: this.marker, scale: 1.25, alpha: 0.6, duration: 700, yoyo: true, repeat: -1 });
@@ -116,6 +121,7 @@ export default class GameScene extends Phaser.Scene {
     this.traffic.update(dt);
     this.eventSys.update(dt);
     this.specials.update(dt);
+    this.nightFog?.update(dt);
     if (this.over) return;
 
     this.hornCooldown -= dt;

@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config.js';
+import { COLORS, NIGHT } from '../config.js';
+
+const smooth = (t) => t * t * t * (t * (t * 6 - 15) + 10); // smootherstep
 
 // Generates all textures in code, then starts the menu.
 export default class BootScene extends Phaser.Scene {
@@ -12,6 +14,7 @@ export default class BootScene extends Phaser.Scene {
     this.makeUi();
     this.makeVehicles();
     this.makeEventProps();
+    this.makeNight();
     this.scene.start('Menu');
   }
 
@@ -94,6 +97,72 @@ export default class BootScene extends Phaser.Scene {
       g.fillStyle(0xd4af37).fillCircle(15, 12, 2);
     });
     this.bake('drop', 2, 14, (g) => g.fillStyle(0xaad4ff).fillRect(0, 0, 2, 14));
+  }
+
+  makeNight() {
+    // headlight cone pointing RIGHT from (0, h/2); alpha = how much darkness it erases
+    const { coneLength, coneSpread } = NIGHT;
+    const cone = this.textures.createCanvas('headlight', coneLength, coneLength);
+    let ctx = cone.getContext();
+    const cy = coneLength / 2;
+    let grad = ctx.createRadialGradient(0, cy, 10, 0, cy, coneLength);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.6, 'rgba(255,255,255,0.7)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(0, cy);
+    ctx.arc(0, cy, coneLength, -coneSpread, coneSpread);
+    ctx.closePath();
+    ctx.fill();
+    cone.refresh();
+
+    const r = NIGHT.glowRadius;
+    const glow = this.textures.createCanvas('glow', r * 2, r * 2);
+    ctx = glow.getContext();
+    grad = ctx.createRadialGradient(r, r, 0, r, r, r);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, r * 2, r * 2);
+    glow.refresh();
+
+    this.makeFogTexture(512, 4);
+  }
+
+  // Tileable value noise (2 octaves), white with noisy alpha
+  makeFogTexture(size, cells) {
+    const tex = this.textures.createCanvas('fog', size, size);
+    const ctx = tex.getContext();
+    const img = ctx.createImageData(size, size);
+    const octave = (n) => {
+      const grid = Array.from({ length: n * n }, () => Math.random());
+      const at = (x, y) => grid[((y + n) % n) * n + ((x + n) % n)];
+      return (u, v) => {
+        const x = (u / size) * n;
+        const y = (v / size) * n;
+        const x0 = Math.floor(x);
+        const y0 = Math.floor(y);
+        const fx = smooth(x - x0);
+        const fy = smooth(y - y0);
+        const top = at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx;
+        const bottom = at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx;
+        return top * (1 - fy) + bottom * fy;
+      };
+    };
+    const a = octave(cells);
+    const b = octave(cells * 2);
+    const c = octave(cells * 4);
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const v = a(x, y) * 0.6 + b(x, y) * 0.28 + c(x, y) * 0.12;
+        const i = (y * size + x) * 4;
+        img.data[i] = img.data[i + 1] = img.data[i + 2] = 225;
+        img.data[i + 3] = Math.round(Math.min(1, v * 1.3) * 255);
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    tex.refresh();
   }
 
   drawCar(g, w, h, color) {

@@ -17,6 +17,7 @@ export const UI = {
   start: (from, to) => `${from} → ${to}. Chalo!`,
   timeLow: '2 minute bache hain. Bhaag!',
   penalty: (s) => `−${s} sec`,
+  fogToggle: (on) => `F = Delhi-NCR November mode (har mission mein fog): ${on ? 'ON 🌫️' : 'OFF'}`,
 };
 
 export const CRASH = [
@@ -49,6 +50,7 @@ export const EVENTS = {
   uturn: 'U-turn sirf 2 km aage. Enjoy.',
   uturnSign: 'U-TURN 2 KM AAGE →',
   rain: 'Bas 1 baadal tha... 🌧️',
+  invisibleTruck: 'Tail light? Bhai budget nahi tha.',
 };
 
 export const SPECIAL = {

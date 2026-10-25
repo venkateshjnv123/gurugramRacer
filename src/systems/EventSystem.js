@@ -8,10 +8,11 @@ import Construction from '../objects/events/Construction.js';
 import Waterlogging from '../objects/events/Waterlogging.js';
 import GaagluMaps from '../objects/events/GaagluMaps.js';
 import UTurn from '../objects/events/UTurn.js';
+import InvisibleTruck from '../objects/events/InvisibleTruck.js';
 
 const TYPES = {
   cow: Cow, thar: Thar, auto: AutoCut, challan: Challan, construction: Construction,
-  waterlogging: Waterlogging, gaaglu: GaagluMaps, uturn: UTurn,
+  waterlogging: Waterlogging, gaaglu: GaagluMaps, uturn: UTurn, invisibleTruck: InvisibleTruck,
 };
 
 // Runs the humor events listed in the mission. Also owns solid obstacles (cows, barriers)

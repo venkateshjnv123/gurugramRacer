@@ -54,6 +54,20 @@ export const SPECIALS = {
   rainAt: 0.5,          // fraction of time limit
 };
 
+export const NIGHT = {
+  darkness: 0.88,      // alpha of the night layer
+  coneLength: 420,     // headlight reach (px)
+  coneSpread: 0.42,    // half-angle (radians)
+  glowRadius: 70,      // light around the bike
+  tailLightRange: 900, // NPC tail lights visible from this far
+  fogAlpha: 0.4,
+  dayFogAlpha: 0.75,   // 'Delhi-NCR November' mode
+  dayHaze: 0.35,
+  fogDrift: [14, 5],   // px/s
+  truckWindow: [0.15, 0.45],
+  truckSpeed: 45,
+};
+
 export const STARS = {
   three: 0.3, // >30% time left
   two: 0.15,  // >15% time left

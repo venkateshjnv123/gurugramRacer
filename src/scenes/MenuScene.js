@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { MISSIONS } from '../data/missions.js';
 import { UI } from '../data/jokes.js';
-import { getBest } from '../systems/Save.js';
+import { getBest, load, save } from '../systems/Save.js';
 import { formatDuration } from '../systems/Clock.js';
 
 export default class MenuScene extends Phaser.Scene {
@@ -33,6 +33,12 @@ export default class MenuScene extends Phaser.Scene {
       fontFamily: 'sans-serif', fontSize: '20px', color: '#cfcfcf', align: 'center',
       wordWrap: { width: 640 },
     }).setOrigin(0.5);
+    this.fogText = this.add.text(0, 0, '', {
+      fontFamily: 'sans-serif', fontSize: '18px', color: '#9fb3c8', padding: { x: 8, y: 4 },
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    this.fogText.on('pointerdown', () => this.toggleFog());
+    this.updateFogText();
+
     this.hint = this.add.text(0, 0, `${UI.menuHint}\n${UI.controls}`, {
       fontFamily: 'sans-serif', fontSize: '16px', color: '#888888', align: 'center',
     }).setOrigin(0.5);
@@ -44,6 +50,7 @@ export default class MenuScene extends Phaser.Scene {
     kb.on('keydown-S', () => this.select((this.selected + 1) % MISSIONS.length));
     kb.on('keydown-ENTER', () => this.startMission(this.selected));
     kb.on('keydown-SPACE', () => this.startMission(this.selected));
+    kb.on('keydown-F', () => this.toggleFog());
 
     this.layout();
     this.scale.on('resize', this.layout, this);
@@ -57,7 +64,17 @@ export default class MenuScene extends Phaser.Scene {
     this.title.setPosition(width / 2, top);
     this.items.forEach((t, i) => t.setPosition(width / 2, top + 110 + i * 52));
     this.brief.setPosition(width / 2, top + 110 + MISSIONS.length * 52 + 50);
+    this.fogText.setPosition(width / 2, height - 100);
     this.hint.setPosition(width / 2, height - 50);
+  }
+
+  toggleFog() {
+    save('ncrFog', !load('ncrFog', false));
+    this.updateFogText();
+  }
+
+  updateFogText() {
+    this.fogText.setText(UI.fogToggle(load('ncrFog', false)));
   }
 
   select(i) {
