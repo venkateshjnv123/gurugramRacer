@@ -32,6 +32,7 @@ export default class ResultScene extends Phaser.Scene {
     } else {
       lines.push({ text: r.reason, size: 26, color: '#ffffff' });
     }
+    for (const e of r.extra ?? []) lines.push({ text: e, size: 22, color: '#f5cba7' });
     lines.push({ text: `"${Phaser.Utils.Array.GetRandom(r.win ? PRAISE : ROASTS)}"`, size: 22, color: '#dddddd' });
     lines.push({ text: `${UI.retry}    ${UI.next}    ${UI.menu}`, size: 18, color: '#999999' });
 

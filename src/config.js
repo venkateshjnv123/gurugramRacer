@@ -29,6 +29,31 @@ export const PENALTY = {
   challan: 10,
 };
 
+export const EVENTS = {
+  cowWait: 8,             // seconds the cows sit after you reach them
+  cowSpacing: 56,         // max px between cow centres across the road (cows are 60 long → they overlap)
+  tharSpeed: 240,
+  tharWindow: [0.12, 0.4], // fraction of time limit when it may trigger
+  autoWindow: [0.06, 0.3],
+  autoRepeats: 2,
+  gaagluWindow: [0.12, 0.35],
+  gaagluDuration: 10,
+  waterRadius: 240,
+  waterSpeed: 0.2,
+  challanZone: 70,        // half-length of the naka zone along the road
+  uturnLength: 1100,      // divider length on Golf Course Road
+  solidHitRadius: 8,
+};
+
+export const SPECIALS = {
+  cakeHit: 20,          // % lost per collision
+  chaiStart: 90,        // °C
+  chaiCold: 45,         // °C = fail
+  chaiStuckFactor: 2.5, // cools faster when you're not moving
+  chaiBudget: 1.15,     // riding non-stop, chai goes cold at this × time limit
+  rainAt: 0.5,          // fraction of time limit
+};
+
 export const STARS = {
   three: 0.3, // >30% time left
   two: 0.15,  // >15% time left
@@ -37,8 +62,8 @@ export const STARS = {
 export const TRAFFIC = {
   maxNpcs: 40,
   jamRadius: 400,      // NPCs this close to a red hot junction queue up
-  signalRed: 20,       // real seconds
-  signalGreen: 6,
+  signalRed: 12,       // real seconds
+  signalGreen: 8,
   spawnMin: 900,       // spawn ring around the bike (px)
   spawnMax: 2000,
   despawn: 2400,

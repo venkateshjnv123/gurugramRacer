@@ -6,6 +6,8 @@ import RoadNet from '../systems/RoadNet.js';
 import MapRenderer from '../systems/MapRenderer.js';
 import Bike from '../objects/Bike.js';
 import TrafficSystem from '../systems/TrafficSystem.js';
+import EventSystem from '../systems/EventSystem.js';
+import Specials from '../systems/Specials.js';
 
 const WIN_RADIUS = 80;
 
@@ -37,6 +39,9 @@ export default class GameScene extends Phaser.Scene {
     this.elapsed = 0;
     this.over = false;
     this.warnedLow = false;
+
+    this.eventSys = new EventSystem(this);
+    this.specials = new Specials(this);
 
     this.marker = this.add.image(this.target.x, this.target.y, 'target').setDepth(8);
     this.tweens.add({ targets: this.marker, scale: 1.25, alpha: 0.6, duration: 700, yoyo: true, repeat: -1 });
@@ -76,9 +81,11 @@ export default class GameScene extends Phaser.Scene {
     this.toast(text ? `${text}  ${UI.penalty(realSeconds * TIME.scale)}` : UI.penalty(realSeconds * TIME.scale));
   }
 
-  onCrash() {
+  // Hit a vehicle (penalty) or a cow/barrier (no penalty). Either way the cake suffers.
+  onCrash(npc, { penalty = true } = {}) {
+    if (this.over) return;
     this.cameras.main.shake(150, 0.008);
-    this.penalize(PENALTY.crash, Phaser.Utils.Array.GetRandom(CRASH));
+    if (penalty) this.penalize(PENALTY.crash, Phaser.Utils.Array.GetRandom(CRASH));
     this.events.emit('crash');
   }
 
@@ -107,6 +114,9 @@ export default class GameScene extends Phaser.Scene {
     this.elapsed += dt;
     this.bike.update(dt, this.readInput());
     this.traffic.update(dt);
+    this.eventSys.update(dt);
+    this.specials.update(dt);
+    if (this.over) return;
 
     this.hornCooldown -= dt;
     if (this.keys.SPACE.isDown && this.hornCooldown <= 0) {
@@ -139,6 +149,7 @@ export default class GameScene extends Phaser.Scene {
         reason: win ? null : FAIL_REASON[reason],
         taken: Math.round(Math.min(this.elapsed, this.limit) * TIME.scale), // game seconds
         stars,
+        extra: this.specials.resultLines(win),
       });
     });
   }

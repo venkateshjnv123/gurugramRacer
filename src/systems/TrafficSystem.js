@@ -11,7 +11,8 @@ export default class TrafficSystem {
     this.npcs = [];
     this.clock = 0;
     this.crashCooldown = 0;
-    this.blockers = []; // static obstacles NPCs queue behind: { road, dir|0, t } (events add these)
+    this.blockers = [];  // static obstacles NPCs queue behind: { road, dir|0, t (a → b), half } (events add these)
+    this.slowZones = []; // { x, y, r, f } e.g. waterlogging
 
     this.signals = [...net.junctions.values()].filter((j) => j.hot).map((j) => {
       j.signalOffset = Phaser.Math.FloatBetween(0, TRAFFIC.signalRed + TRAFFIC.signalGreen);
@@ -65,6 +66,7 @@ export default class TrafficSystem {
       let pick = Math.random() * total;
       const road = roads.find((r) => (pick -= TRAFFIC.density[r.type] * r.len) <= 0) ?? roads[0];
       const dir = Math.random() < 0.5 ? 1 : -1;
+      if (road.closed?.has(dir)) continue;
       const startJ = dir > 0 ? road.a : road.b;
       const endJ = dir > 0 ? road.b : road.a;
       const t = Phaser.Math.FloatBetween(startJ.radius + 30, road.len - endJ.radius - 30);
@@ -129,9 +131,15 @@ export default class TrafficSystem {
         if (gap > -10 && gap < 200) d = Math.min(d, Math.max(0, (gap - 10) * 1.5));
       }
     }
-    // brake for the bike if it's right in front (unless reckless)
-    if (!npc.reckless) {
-      const { fwd, side } = this.local(npc, this.bike.x, this.bike.y);
+    for (const z of this.slowZones) {
+      if (Math.hypot(npc.x - z.x, npc.y - z.y) < z.r) d = Math.min(d, npc.baseSpeed * z.f);
+    }
+    // brake for the bike if it's right in front going the same way (unless reckless).
+    // Oncoming traffic doesn't stop for a wrong-side bike — that's a crash.
+    const b = this.bike;
+    const sameWay = Math.cos(b.heading - npc.heading) > 0.3;
+    if (!npc.reckless && sameWay) {
+      const { fwd, side } = this.local(npc, b.x, b.y);
       if (fwd > 0 && fwd < npc.h / 2 + 90 && Math.abs(side) < npc.w / 2 + 14) {
         d = Math.min(d, Math.max(0, (fwd - npc.h / 2 - 20) * 1.5));
       }

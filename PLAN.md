@@ -37,6 +37,14 @@
 | Road widths | From lanes: 30px lanes, highway 3/side (180px), main 2/side (120px), gali 1/side (60px) |
 | Bike physics | Hand-rolled (speed + heading, walls via RoadNet road shapes), not Arcade bodies — diagonal roads don't fit AABBs |
 | Mission routes | Rain = **MG Road → Hero Honda**, Night = **Cyber Hub → Sector 54** (original routes were < 15s of riding) |
+| Lane width | **36px** (cars 22px wide) so a bike can squeeze between stopped rows; bike crash hitbox radius 6 |
+| Signals | **12s red / 8s green** (was 20/6 — jams ate a third of each mission) |
+| NPC rules | NPCs only brake for a bike ahead going the same way (wrong-side = you get hit); NPCs despawn at dead ends; buses/trucks never enter galis |
+| Construction | Blocks the route road whose closure costs the *smallest* detour; shown as red ✕ on minimap |
+| U-turn | GCR's left carriageway barricaded + central divider (`EVENTS.uturnLength`): ride wrong-side till the divider ends, or detour |
+| Challan | Shown as blue dot on minimap so you can plan a gali detour |
+| Cows | A row of cows walls off the whole road; they leave 8s after you arrive |
+| Time limits | Interview 13, Cake 8, Chai 6, Rain 7, Night 7 game-min (from bot calibration runs; re-tune in Phase 6) |
 | Horn before Phase 7 | Visual only (toast/ripple); M key is a stub until sound exists |
 
 ---

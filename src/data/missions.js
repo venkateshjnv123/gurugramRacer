@@ -3,7 +3,7 @@
 // startsAt = [hour (24h), minute] on the game clock.
 export const MISSIONS = [
   { id: 'interview', title: 'Interview at 10 baje',
-    from: 'ambience', to: 'vatika', minutes: 11, startsAt: [9, 49], night: false,
+    from: 'ambience', to: 'vatika', minutes: 13, startsAt: [9, 47], night: false,
     brief: 'HR already gussa hai. Late hua toh "we will get back to you".',
     events: ['cow', 'thar', 'challan', 'gaaglu'] },
 
@@ -14,13 +14,13 @@ export const MISSIONS = [
     events: ['auto', 'thar', 'construction'] },
 
   { id: 'chai', title: '₹40 ki chai, ₹40 crore ka flat',
-    from: 'iffco', to: 'sector54', minutes: 4, startsAt: [16, 56], night: false,
+    from: 'iffco', to: 'sector54', minutes: 6, startsAt: [16, 54], night: false,
     brief: 'Golf Course Road ke penthouse mein chai deliver kar. Thandi nahi honi chahiye.',
     special: 'chaiTemp', // temperature drops over time (faster when stuck); cold = fail
     events: ['uturn', 'challan', 'cow'] },
 
   { id: 'rain', title: 'Barish se pehle ghar',
-    from: 'mgroad', to: 'herohonda', minutes: 8, startsAt: [18, 22], night: false,
+    from: 'mgroad', to: 'herohonda', minutes: 7, startsAt: [18, 23], night: false,
     brief: 'Bas 1 baadal hai, kuch nahi hoga. (Hoga.)',
     special: 'rainAlways', // rain starts at 50% time no matter what → waterlogging at herohonda
     events: ['waterlogging', 'auto'] },

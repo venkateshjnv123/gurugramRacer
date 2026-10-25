@@ -11,6 +11,7 @@ export default class BootScene extends Phaser.Scene {
     this.makeBike();
     this.makeUi();
     this.makeVehicles();
+    this.makeEventProps();
     this.scene.start('Menu');
   }
 
@@ -66,6 +67,33 @@ export default class BootScene extends Phaser.Scene {
     this.bake('dot', 16, 16, (g) => g.fillStyle(0xffffff).fillCircle(8, 8, 8));
     // horn ripple
     this.bake('ring', 64, 64, (g) => g.lineStyle(4, 0xffffff, 1).strokeCircle(32, 32, 29));
+  }
+
+  makeEventProps() {
+    // cow lying across the road, head on the right
+    this.bake('cow', 60, 32, (g) => {
+      g.fillStyle(0x000000, 0.2).fillEllipse(30, 19, 50, 26);
+      g.fillStyle(0xf4f1ea).fillEllipse(27, 16, 46, 26);
+      g.fillStyle(0x3b3b3b).fillEllipse(18, 11, 12, 8).fillEllipse(33, 20, 10, 8);
+      g.fillStyle(0xf4f1ea).fillEllipse(52, 16, 14, 12);           // head
+      g.fillStyle(0xd9a066).fillTriangle(50, 8, 54, 2, 56, 9).fillTriangle(50, 24, 54, 30, 56, 23); // horns
+      g.fillStyle(0xe8a0a0).fillEllipse(58, 16, 5, 7);             // nose
+      g.lineStyle(2, 0x3b3b3b).lineBetween(4, 16, 0, 22);         // tail
+    });
+    // striped barricade block (long side across the road)
+    this.bake('barrier', 16, 40, (g) => {
+      g.fillStyle(0xff7a00).fillRect(0, 0, 16, 40);
+      g.fillStyle(0xffffff);
+      for (let y = 4; y < 40; y += 12) g.fillRect(0, y, 16, 5);
+      g.lineStyle(2, 0x7a3a00).strokeRect(1, 1, 14, 38);
+    });
+    // traffic cop from above: khaki shoulders + cap
+    this.bake('cop', 30, 30, (g) => {
+      g.fillStyle(0xb59b5a).fillEllipse(15, 17, 28, 18);
+      g.fillStyle(0x23315c).fillCircle(15, 15, 8);
+      g.fillStyle(0xd4af37).fillCircle(15, 12, 2);
+    });
+    this.bake('drop', 2, 14, (g) => g.fillStyle(0xaad4ff).fillRect(0, 0, 2, 14));
   }
 
   drawCar(g, w, h, color) {

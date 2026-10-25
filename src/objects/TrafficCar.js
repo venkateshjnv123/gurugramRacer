@@ -23,6 +23,7 @@ export default class TrafficCar {
     this.despawnAtEnd = false; // one-shot event vehicles leave at the next junction
     this.reckless = false;     // doesn't brake for the bike
     this.ignoresSignals = false;
+    this.lateralSpeed = 40;
     this.laneChangeTimer = kind === 'auto' ? Phaser.Math.FloatBetween(2, 5) : Infinity;
     const key = kind === 'car' ? `car${Phaser.Math.Between(0, COLORS.cars.length - 1)}` : kind;
     this.sprite = scene.add.image(0, 0, key).setDepth(9);
@@ -81,7 +82,7 @@ export default class TrafficCar {
     }
 
     this.t += this.speed * dt;
-    this.n = approach(this.n, this.targetN, 40 * dt);
+    this.n = approach(this.n, this.targetN, this.lateralSpeed * dt);
 
     this.laneChangeTimer -= dt;
     if (this.laneChangeTimer <= 0 && this.road.lanes > 1) {
@@ -92,7 +93,7 @@ export default class TrafficCar {
     }
 
     if (this.t >= this.road.len - this.endJ.radius + 5) {
-      if (this.despawnAtEnd) {
+      if (this.despawnAtEnd || this.endJ.roads.length === 1) {
         this.dead = true;
         return;
       }
@@ -104,8 +105,9 @@ export default class TrafficCar {
   // Pick a random exit at the junction ahead and drive straight across to it.
   startTurn() {
     const j = this.endJ;
-    const exits = j.roads.filter((r) => r !== this.road);
-    const next = exits.length ? Phaser.Utils.Array.GetRandom(exits) : this.road; // dead end: U-turn
+    const big = this.kind === 'bus' || this.kind === 'truck';
+    const exits = j.roads.filter((r) => r !== this.road && !r.closed?.has(r.a === j ? 1 : -1) && !(big && r.type === 'gali'));
+    const next = exits.length ? Phaser.Utils.Array.GetRandom(exits) : this.road; // nowhere to go: U-turn
     const dir = next.a === j ? 1 : -1;
     const lane = Math.min(this.lane, next.lanes - 1);
     const t = j.radius - 5;

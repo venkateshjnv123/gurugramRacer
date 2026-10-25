@@ -35,8 +35,34 @@ export const HORN = {
   ],
 };
 
+export const EVENTS = {
+  cow: 'Gau Mata ka break time hai. Wait karo.',
+  cowLeaves: 'Gau Mata ne raasta de diya. Aashirwad mil gaya 🙏',
+  thar: 'Bhai tu jaanta hai main kaun hoon?',
+  auto: 'Indicator? Woh kya hota hai?',
+  challan: 'Helmet hai? Papers hai? Chai-paani?',
+  challanSign: 'NAKA',
+  construction: 'Road under construction since 2019',
+  constructionSign: 'KAAM CHALU HAI',
+  waterlogging: 'Hero Honda Chowk ab Hero Honda Beach hai 🏖️',
+  gaaglu: 'Gaaglu Maps: Turn right into... the jam.',
+  uturn: 'U-turn sirf 2 km aage. Enjoy.',
+  uturnSign: 'U-TURN 2 KM AAGE →',
+  rain: 'Bas 1 baadal tha... 🌧️',
+};
+
+export const SPECIAL = {
+  cake: (p) => `🎂 Cake: ${p}%`,
+  cakeHit: 'Cake ka ek kona gaya 😬',
+  chai: (t) => `☕ Chai: ${t}°C`,
+  chaiTip: (r) => `Tip mili: ₹${r}`,
+  chaiWarm: 'Chai thandi ho rahi hai! Jaldi!',
+};
+
 export const FAIL_REASON = {
   time: 'Time khatam.',
+  cake: 'Cake gir gaya. Dosti khatam. 🎂💀',
+  chai: 'Chai thandi ho gayi. Penthouse wale ne 1 star diya.',
 };
 
 export const ROASTS = [
