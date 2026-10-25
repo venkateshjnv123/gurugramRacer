@@ -5,7 +5,7 @@ import GameScene from './scenes/GameScene.js';
 import HUDScene from './scenes/HUDScene.js';
 import ResultScene from './scenes/ResultScene.js';
 
-new Phaser.Game({
+const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
   backgroundColor: '#000000',
@@ -20,3 +20,6 @@ new Phaser.Game({
   },
   scene: [BootScene, MenuScene, GameScene, HUDScene, ResultScene],
 });
+
+// exposed for local debugging / automated smoke tests only
+if (import.meta.env.DEV) window.__phaser = game;

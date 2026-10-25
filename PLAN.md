@@ -34,6 +34,9 @@
 | Chai | Chai going cold = **mission failed** |
 | Stars | ★★★ >30% time left, ★★ >15%, ★ finished |
 | Missions | All 5 unlocked from the start |
+| Road widths | From lanes: 30px lanes, highway 3/side (180px), main 2/side (120px), gali 1/side (60px) |
+| Bike physics | Hand-rolled (speed + heading, walls via RoadNet road shapes), not Arcade bodies — diagonal roads don't fit AABBs |
+| Mission routes | Rain = **MG Road → Hero Honda**, Night = **Cyber Hub → Sector 54** (original routes were < 15s of riding) |
 | Horn before Phase 7 | Visual only (toast/ripple); M key is a stub until sound exists |
 
 ---
