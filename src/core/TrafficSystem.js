@@ -1,26 +1,28 @@
-import Phaser from 'phaser';
 import { TRAFFIC } from '../config.js';
-import TrafficCar from '../objects/TrafficCar.js';
+import TrafficCar from './TrafficCar.js';
+import { between, floatBetween } from './rand.js';
 
-// Spawns NPCs around the bike, runs signal cycles at hot junctions, and handles bike crashes.
+// Spawns NPCs around the bike, runs signal cycles at hot junctions, and detects bike crashes.
+// Views read `npcs` and `signals` each frame; `onCrash(npc)` is called on a penalised hit.
 export default class TrafficSystem {
-  constructor(scene, net, bike) {
-    this.scene = scene;
+  constructor(net, bike, { onCrash }) {
     this.net = net;
     this.bike = bike;
+    this.onCrash = onCrash;
     this.npcs = [];
     this.clock = 0;
     this.crashCooldown = 0;
     this.blockers = [];  // static obstacles NPCs queue behind: { road, dir|0, t (a → b), half } (events add these)
     this.slowZones = []; // { x, y, r, f } e.g. waterlogging
 
+    // one light per road entering each hot junction, on the left kerb at the stop line
     this.signals = [...net.junctions.values()].filter((j) => j.hot).map((j) => {
-      j.signalOffset = Phaser.Math.FloatBetween(0, TRAFFIC.signalRed + TRAFFIC.signalGreen);
+      j.signalOffset = floatBetween(0, TRAFFIC.signalRed + TRAFFIC.signalGreen);
       const lights = j.roads.map((r) => {
-        // light on the left kerb of each road, at the stop line, for traffic coming in
         const incomingAB = r.b === j;
-        const p = net.pointAt(r, incomingAB ? r.len - j.radius : j.radius, (r.hw + 12) * (incomingAB ? 1 : -1));
-        return scene.add.image(p.x, p.y, 'dot').setDepth(6).setScale(1.3);
+        const t = incomingAB ? r.len - j.radius : j.radius;
+        const p = net.pointAt(r, t, (r.hw + 12) * (incomingAB ? 1 : -1));
+        return { x: p.x, y: p.y, facing: Math.atan2(r.dy, r.dx) + (incomingAB ? Math.PI : 0) };
       });
       return { j, lights };
     });
@@ -34,9 +36,8 @@ export default class TrafficSystem {
   }
 
   pickKind(type) {
-    const mix = TRAFFIC.mix[type];
     let r = Math.random();
-    for (const [kind, p] of Object.entries(mix)) {
+    for (const [kind, p] of Object.entries(TRAFFIC.mix[type])) {
       r -= p;
       if (r <= 0) return kind;
     }
@@ -45,8 +46,7 @@ export default class TrafficSystem {
 
   spawn(kind, road, dir, lane, t, speed) {
     const [lo, hi] = TRAFFIC.speed[road.type];
-    const npc = new TrafficCar(this.scene, this.net, kind, road, dir, lane, t,
-      speed ?? Phaser.Math.Between(lo, hi) * TRAFFIC.kindSpeed[kind]);
+    const npc = new TrafficCar(this.net, kind, road, dir, lane, t, speed ?? between(lo, hi) * TRAFFIC.kindSpeed[kind]);
     this.npcs.push(npc);
     return npc;
   }
@@ -63,22 +63,21 @@ export default class TrafficSystem {
     const total = roads.reduce((sum, r) => sum + TRAFFIC.density[r.type] * r.len, 0);
 
     for (let attempt = 0; attempt < 12; attempt++) {
-      let pick = Math.random() * total;
-      const road = roads.find((r) => (pick -= TRAFFIC.density[r.type] * r.len) <= 0) ?? roads[0];
+      let roll = Math.random() * total;
+      const road = roads.find((r) => (roll -= TRAFFIC.density[r.type] * r.len) <= 0) ?? roads[0];
       const dir = Math.random() < 0.5 ? 1 : -1;
       if (road.closed?.has(dir)) continue;
       const startJ = dir > 0 ? road.a : road.b;
       const endJ = dir > 0 ? road.b : road.a;
-      const t = Phaser.Math.FloatBetween(startJ.radius + 30, road.len - endJ.radius - 30);
+      const t = floatBetween(startJ.radius + 30, road.len - endJ.radius - 30);
       if (!(t > 0)) continue;
-      const lane = Phaser.Math.Between(0, road.lanes - 1);
+      const lane = between(0, road.lanes - 1);
       const p = this.net.pointAt(road, dir > 0 ? t : road.len - t, TrafficCar.laneN(lane) * dir);
       const d = Math.hypot(p.x - b.x, p.y - b.y);
       if (d < minD || d > TRAFFIC.spawnMax) continue;
       const crowded = this.npcs.some((o) => o.road === road && o.dir === dir && o.lane === lane && Math.abs(o.t - t) < 110);
       if (crowded) continue;
-      const kind = this.pickKind(road.type);
-      this.spawn(kind, road, dir, lane, t);
+      this.spawn(this.pickKind(road.type), road, dir, lane, t);
       return;
     }
   }
@@ -88,16 +87,8 @@ export default class TrafficSystem {
     this.crashCooldown -= dt;
     const b = this.bike;
 
-    for (const s of this.signals) {
-      const tint = this.isRed(s.j) ? 0xff2222 : 0x22ff55;
-      for (const l of s.lights) l.setTint(tint);
-    }
-
     for (const npc of this.npcs) {
-      if (npc.dead || Math.hypot(npc.x - b.x, npc.y - b.y) > TRAFFIC.despawn) {
-        npc.dead = true;
-        npc.destroy();
-      }
+      if (Math.hypot(npc.x - b.x, npc.y - b.y) > TRAFFIC.despawn) npc.dead = true;
     }
     this.npcs = this.npcs.filter((n) => !n.dead);
     if (this.npcs.length < TRAFFIC.maxNpcs) this.trySpawn(false);
@@ -163,11 +154,11 @@ export default class TrafficSystem {
     this.bike.bounce(npc.x, npc.y);
     if (this.crashCooldown <= 0) {
       this.crashCooldown = TRAFFIC.crashCooldown;
-      this.scene.onCrash(npc);
+      this.onCrash(npc);
     }
   }
 
-  // Space: 90% of the time nobody cares. 10%: the vehicle ahead moves aside.
+  // Horn: 90% of the time nobody cares. 10%: the vehicle ahead moves aside.
   honk() {
     const b = this.bike;
     let best = null;

@@ -1,8 +1,9 @@
 # Gurugram Racer 🏍️
 
-A small, funny, top-down bike game set in a caricature of Gurugram. Beat the clock across
-NH-48, Golf Course Road and Sohna Road — while dodging cows, wrong-side Thars, autos with
-no indicators, police nakas and Hero Honda Chowk's annual beach.
+A small, funny 3D bike game set in a caricature of Gurugram. Ride behind your rider past
+IFFCO Tower, MGF Metropolitan, Cyber Hub and the MG Road metro — and beat the clock while
+dodging cows, wrong-side Thars, autos with no indicators, police nakas and Hero Honda
+Chowk's annual beach.
 
 **▶ Play: https://venkateshjnv123.github.io/gurugramRacer/**
 
@@ -16,6 +17,7 @@ no indicators, police nakas and Hero Honda Chowk's annual beach.
 | Shift | Brake |
 | Space | Horn (nobody cares, 90% of the time) |
 | Esc | Pause |
+| C | Camera: High / Mid / Close |
 | F (menu) | Delhi-NCR November mode — fog on every mission |
 | R / N / S (result screen) | Retry / Next mission / Share |
 
@@ -25,13 +27,14 @@ no indicators, police nakas and Hero Honda Chowk's annual beach.
 2. **Birthday cake delivery** — Medanta → Cyber Hub. Every crash costs 20% of the cake.
 3. **₹40 ki chai, ₹40 crore ka flat** — IFFCO Chowk → Sector 54. Don't let the chai go cold.
 4. **Barish se pehle ghar** — MG Road → Hero Honda Chowk. It will rain.
-5. **2 AM — Cyber Hub se ghar** — night, fog, and a truck with no tail lights.
+5. **2 AM — Cyber Hub se ghar** — Cyber Hub → Sector 54 at night, and a truck with no tail lights.
 
 ## Tech
 
-Phaser 3.90 + Vite, plain JavaScript. All art is drawn in code — there are no image files.
-Every gameplay number lives in `src/config.js`; all player-facing text in `src/data/jokes.js`
-and `src/data/missions.js`. See `PLAN.md` for scope and design decisions.
+Three.js + Vite, plain JavaScript. All art is built in code — boxes, cylinders and canvas
+textures; there are no image or model files. Game logic (`src/core/`) is engine-free and runs
+headless in Node; `src/3d/` renders it. Every gameplay number lives in `src/config.js`; all
+player-facing text in `src/data/jokes.js` and `src/data/missions.js`. See `PLAN.md`.
 
 ```sh
 npm install

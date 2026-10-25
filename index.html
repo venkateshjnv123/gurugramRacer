@@ -6,12 +6,45 @@
     <title>Gurugram Racer</title>
     <link rel="icon" href="data:," />
     <style>
-      html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
-      #game { width: 100%; height: 100%; }
+      html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: system-ui, sans-serif; }
+      #game { position: fixed; inset: 0; }
+      #hud { position: fixed; inset: 0; pointer-events: none; color: #fff; text-shadow: 0 1px 3px #000; }
+      .panel { position: absolute; background: rgba(0,0,0,0.45); padding: 8px 12px; border-radius: 8px; font-weight: bold; }
+      .tl { top: 12px; left: 12px; min-width: 220px; } .tr { top: 12px; right: 12px; text-align: right; }
+      .bl { bottom: 12px; left: 12px; font-size: 13px; font-weight: normal; }
+      .big { font-size: 28px; } .dim { opacity: 0.75; font-size: 14px; font-weight: normal; }
+      .bar { margin-top: 6px; font-size: 15px; }
+      .bar .track { height: 10px; background: rgba(0,0,0,0.6); border-radius: 5px; margin-top: 4px; overflow: hidden; }
+      .bar .track div { height: 100%; width: 100%; }
+      #gps { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); text-align: center; font-weight: bold; }
+      #gps svg { transition: transform 0.12s linear; display: block; margin: 0 auto; }
+      #toasts { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; width: min(720px, 90vw); }
+      .toast { background: rgba(0,0,0,0.72); padding: 10px 18px; border-radius: 8px; font-size: 20px; font-weight: bold; text-align: center; transition: opacity 0.2s; }
+      #mini { position: absolute; right: 12px; bottom: 12px; border-radius: 6px; }
+      #screens { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; color: #fff; background: rgba(10,12,20,0.35); }
+      .card { background: rgba(20,22,32,0.88); padding: 28px 40px; border-radius: 16px; text-align: center; max-width: 92vw; }
+      .card h1 { color: #f1c40f; font-size: 52px; margin: 0; letter-spacing: 1px; }
+      .card h2 { font-size: 44px; margin: 6px 0; }
+      .tagline { font-style: italic; opacity: 0.85; margin-bottom: 18px; }
+      .missions { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+      .mission { font: inherit; font-size: 22px; color: #fff; background: transparent; border: 0; padding: 6px 16px; border-radius: 6px; cursor: pointer; }
+      .mission.on { background: #f1c40f; color: #1b1b24; }
+      .brief { margin: 16px auto 8px; max-width: 560px; line-height: 1.5; }
+      .link { font: inherit; background: transparent; border: 0; color: #9fb3c8; cursor: pointer; margin-top: 6px; }
+      .hint { margin-top: 14px; font-size: 14px; opacity: 0.75; line-height: 1.6; }
+      .hint a { text-decoration: underline; cursor: pointer; }
+      .win { color: #2ecc71; } .fail { color: #ff4d4d; }
+      .wincard { background: rgba(16,48,31,0.92); } .failcard { background: rgba(48,16,16,0.92); }
+      .stars { color: #f1c40f; font-size: 52px; }
+      .gold { color: #f1c40f; } .extra { color: #f5cba7; } .rage { color: #ff9f80; margin-top: 6px; }
+      .quote { margin-top: 12px; font-size: 20px; }
+      .status { margin-top: 10px; color: #2ecc71; }
     </style>
   </head>
   <body>
     <div id="game"></div>
-    <script type="module" src="/src/main.js"></script>
+    <div id="hud"></div>
+    <div id="screens"></div>
+    <script type="module" src="/src/3d/main.js"></script>
   </body>
 </html>

@@ -1,12 +1,12 @@
-import Phaser from 'phaser';
 import { NIGHT } from '../../config.js';
 import { EVENTS as LINES } from '../../data/jokes.js';
+import { floatBetween } from '../rand.js';
 
 // Night only: a slow truck with no tail lights, sitting in your lane somewhere in the fog.
 export default class InvisibleTruck {
   constructor(sys) {
     this.sys = sys;
-    this.at = Phaser.Math.FloatBetween(...NIGHT.truckWindow) * sys.scene.limit;
+    this.at = floatBetween(...NIGHT.truckWindow) * sys.game.limit;
     this.warned = false;
   }
 

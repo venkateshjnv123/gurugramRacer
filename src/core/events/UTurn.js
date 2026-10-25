@@ -10,7 +10,6 @@ export default class UTurn {
     if (!road) return;
     const dir = sys.routeDir(road);
     const start = dir > 0 ? road.a : road.b;
-    const { scene } = sys;
     const angle = sys.travelAngle(road, dir);
     const t0 = start.radius + 40;
     const L = Math.min(EVENTS.uturnLength, road.len - start.radius * 2 - 80);
@@ -18,7 +17,7 @@ export default class UTurn {
     // barricade across your (left) half
     for (let n = 14; n < road.hw; n += 28) {
       const p = sys.travelPoint(road, dir, t0, n);
-      scene.add.image(p.x, p.y, 'barrier').setDepth(8).setRotation(angle);
+      sys.props.add('barrier', { x: p.x, y: p.y, rot: angle });
     }
     const bc = sys.travelPoint(road, dir, t0, road.hw / 2);
     sys.addSolid(bc.x, bc.y, 20, road.hw, angle);
@@ -26,17 +25,12 @@ export default class UTurn {
     // central divider
     const d0 = sys.travelPoint(road, dir, t0);
     const d1 = sys.travelPoint(road, dir, t0 + L);
-    scene.add.graphics().setDepth(7)
-      .lineStyle(12, 0x222222, 1).lineBetween(d0.x, d0.y, d1.x, d1.y)
-      .lineStyle(6, 0xf1c40f, 1).lineBetween(d0.x, d0.y, d1.x, d1.y);
+    sys.props.add('divider', { x0: d0.x, y0: d0.y, x1: d1.x, y1: d1.y });
     const dc = sys.travelPoint(road, dir, t0 + L / 2);
     sys.addSolid(dc.x, dc.y, L, 12, angle);
 
     const sign = sys.travelPoint(road, dir, t0 - 10, road.hw + 60);
-    scene.add.text(sign.x, sign.y, LINES.uturnSign, {
-      fontFamily: 'sans-serif', fontSize: '16px', fontStyle: 'bold', color: '#ffffff',
-      backgroundColor: '#1f7a3a', padding: { x: 6, y: 3 },
-    }).setOrigin(0.5).setDepth(8);
+    sys.props.add('sign', { x: sign.x, y: sign.y, text: LINES.uturnSign, bg: '#1f7a3a', fg: '#ffffff' });
 
     // NPCs don't drive into the closed half
     road.closed = new Set([dir]);

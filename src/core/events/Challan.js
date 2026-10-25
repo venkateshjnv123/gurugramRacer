@@ -8,22 +8,18 @@ export default class Challan {
     const road = sys.pickRouteRoad((r) => r.type !== 'gali');
     if (!road) return;
     this.road = road;
-    this.t = road.len * 0.4; // a → b frame, off the road-name label at the midpoint
-    const s = sys.scene;
+    this.t = road.len * 0.4; // a → b frame, off the road-name board at the midpoint
     const angle = Math.atan2(road.dy, road.dx);
     for (const side of [1, -1]) {
       const cop = sys.net.pointAt(road, this.t + 20 * side, (road.hw - 18) * side);
-      s.add.image(cop.x, cop.y, 'cop').setDepth(9);
+      sys.props.add('cop', { x: cop.x, y: cop.y, rot: angle + Math.PI / 2 * side });
       const bar = sys.net.pointAt(road, this.t - 20 * side, (road.hw - 22) * side);
-      s.add.image(bar.x, bar.y, 'barrier').setDepth(8).setRotation(angle);
+      sys.props.add('barrier', { x: bar.x, y: bar.y, rot: angle });
     }
     const sign = sys.net.pointAt(road, this.t, road.hw + 40);
-    s.add.text(sign.x, sign.y, LINES.challanSign, {
-      fontFamily: 'sans-serif', fontSize: '16px', fontStyle: 'bold', color: '#ffffff',
-      backgroundColor: '#1a3c8a', padding: { x: 6, y: 3 },
-    }).setOrigin(0.5).setDepth(8);
+    sys.props.add('sign', { x: sign.x, y: sign.y, text: LINES.challanSign, bg: '#1a3c8a', fg: '#ffffff' });
     const c = sys.net.pointAt(road, this.t);
-    sys.marks.push({ x: c.x, y: c.y, color: 0x3d7bff });
+    sys.marks.push({ x: c.x, y: c.y, color: '#3d7bff' });
     this.caught = false;
   }
 
@@ -33,7 +29,7 @@ export default class Challan {
     const p = this.sys.net.project(this.road, b.x, b.y);
     if (Math.abs(p.t - this.t) < EVENTS.challanZone && Math.abs(p.n) < this.road.hw) {
       this.caught = true;
-      this.sys.scene.penalize(PENALTY.challan, LINES.challan);
+      this.sys.game.penalize(PENALTY.challan, LINES.challan);
     }
   }
 }

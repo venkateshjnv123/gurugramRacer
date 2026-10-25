@@ -1,13 +1,15 @@
-import Phaser from 'phaser';
 import { COLORS, LANES } from '../config.js';
+import { between, floatBetween, pick } from './rand.js';
 
 export const SIZE = { car: [22, 44], thar: [26, 46], auto: [20, 32], bus: [26, 90], truck: [26, 80] };
+
+let nextId = 1;
 
 // An NPC that drives along a road in "travel frame": t = distance from its start junction,
 // n = offset to the LEFT of its travel direction (left-hand traffic: normal lanes have n > 0).
 export default class TrafficCar {
-  constructor(scene, net, kind, road, dir, lane, t, speed) {
-    this.scene = scene;
+  constructor(net, kind, road, dir, lane, t, speed) {
+    this.id = nextId++;
     this.net = net;
     this.kind = kind;
     this.road = road;
@@ -23,10 +25,10 @@ export default class TrafficCar {
     this.despawnAtEnd = false; // one-shot event vehicles leave at the next junction
     this.reckless = false;     // doesn't brake for the bike
     this.ignoresSignals = false;
+    this.noTailLights = false;
     this.lateralSpeed = 40;
-    this.laneChangeTimer = kind === 'auto' ? Phaser.Math.FloatBetween(2, 5) : Infinity;
-    const key = kind === 'car' ? `car${Phaser.Math.Between(0, COLORS.cars.length - 1)}` : kind;
-    this.sprite = scene.add.image(0, 0, key).setDepth(9);
+    this.laneChangeTimer = kind === 'auto' ? floatBetween(2, 5) : Infinity;
+    this.color = kind === 'car' ? pick(COLORS.cars) : null;
     this.place();
   }
 
@@ -52,11 +54,6 @@ export default class TrafficCar {
     this.x = p.x;
     this.y = p.y;
     this.heading = Math.atan2(this.road.dy * this.dir, this.road.dx * this.dir);
-    this.sync();
-  }
-
-  sync() {
-    this.sprite.setPosition(this.x, this.y).setRotation(this.heading + Math.PI / 2);
   }
 
   update(dt) {
@@ -75,9 +72,7 @@ export default class TrafficCar {
         this.n = this.targetN = TrafficCar.laneN(tr.lane);
         this.turn = null;
         this.place();
-        return;
       }
-      this.sync();
       return;
     }
 
@@ -87,9 +82,9 @@ export default class TrafficCar {
     this.laneChangeTimer -= dt;
     if (this.laneChangeTimer <= 0 && this.road.lanes > 1) {
       // autos: random lane switching, no indicator
-      this.lane = Phaser.Math.Between(0, this.road.lanes - 1);
+      this.lane = between(0, this.road.lanes - 1);
       this.targetN = TrafficCar.laneN(this.lane);
-      this.laneChangeTimer = Phaser.Math.FloatBetween(2, 5);
+      this.laneChangeTimer = floatBetween(2, 5);
     }
 
     if (this.t >= this.road.len - this.endJ.radius + 5) {
@@ -107,7 +102,7 @@ export default class TrafficCar {
     const j = this.endJ;
     const big = this.kind === 'bus' || this.kind === 'truck';
     const exits = j.roads.filter((r) => r !== this.road && !r.closed?.has(r.a === j ? 1 : -1) && !(big && r.type === 'gali'));
-    const next = exits.length ? Phaser.Utils.Array.GetRandom(exits) : this.road; // nowhere to go: U-turn
+    const next = exits.length ? pick(exits) : this.road; // nowhere to go: U-turn
     const dir = next.a === j ? 1 : -1;
     const lane = Math.min(this.lane, next.lanes - 1);
     const t = j.radius - 5;
@@ -117,10 +112,6 @@ export default class TrafficCar {
       len: Math.hypot(to.x - this.x, to.y - this.y), p: 0,
       road: next, dir, lane, t,
     };
-  }
-
-  destroy() {
-    this.sprite.destroy();
   }
 }
 

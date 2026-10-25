@@ -48,54 +48,44 @@
 | Pause | Esc is owned by HUDScene (both scenes hear the key); R = restart, Q = menu |
 | Horn before Phase 7 | Visual only (toast/ripple); M key is a stub until sound exists |
 
-### 1c. 3D direction (2026-10-26) — prototype stage
+### 1c. 3D version (2026-10-26) — this is now the game
 
-Playtest feedback: the north-up top-down view is hard to play (← turns the bike *right* when it faces down the screen).
-Decision: **prototype option C — real 3D, low-poly, chase camera behind the rider**, rendered with **Three.js 0.186.1**
-(approved addition). Everything is still generated in code (boxes, cylinders, canvas textures) — no downloaded assets.
+Playtest feedback: the north-up top-down view was hard to play (← turned the bike *right* when it faced down the screen).
+The game is now **real 3D, low-poly, chase camera behind the rider**, rendered with **Three.js 0.186.1**. Phaser is removed.
+Everything is still generated in code (boxes, cylinders, canvas textures) — no downloaded assets.
 
-- Prototype lives beside the Phaser game: `proto3d.html` → `src/3d/`. The Phaser game is untouched until the prototype is approved.
-- Reused as-is: `data/map.js`, `config.js`, `systems/RoadNet.js`. Bike physics extracted to `objects/BikePhysics.js` (shared).
-- Prototype scope: 3D city (roads, junctions, buildings, signboards, trees), bike + rider model, chase camera
-  (C cycles close / mid / high), road-only walls, speedometer, minimap, direction arrow, free ride Ambience → Vatika.
-  No traffic, events or missions yet.
-- If approved, the port plan: 3D city + riding → HTML HUD/menus → traffic models → events/night → tune + ship.
+| Area | Decision |
+|---|---|
+| Architecture | `src/core/` = engine-free game logic (Game, traffic, events, specials). `src/3d/` = Three.js view + HTML HUD/menus. Core runs headless in Node for testing/tuning |
+| Camera | Chase camera, C cycles High (default) / Mid / Close |
+| Handling | Steering eases in (~0.15s), turn rate 140°/s slow → 75°/s at full speed, kerbs slide you along, fixed 120 Hz physics sub-steps (same feel at any frame rate) |
+| Realism | Landmark per junction (`data/landmarks.js`): Ambience Mall, Cyber Hub + Cyber City towers, IFFCO Tower, MGF Metropolitan, Medanta, golf course, Subhash market… plus elevated Yellow Line metro with a moving train along MG Road, street lights, joke billboards on NH-48 |
+| New junction | **Shankar Chowk** (hot) where Golf Course Road crossed NH-48 mid-road (was an unmarked gap in the walls) |
+| Metro pillars | Visual only (solid pillars on the median made riders bounce unfairly) |
+| GPS | Arrow points to the next junction on the best route (routes around closures; Gaaglu Maps lies for 10s) |
+| Night / smog | Dark sky + lit windows + street lamps + bike spotlight; tail lights ignore fog. Delhi-NCR November = thick smog fog |
+| Time limits | Interview 14, Cake 10, Chai 6, Rain 8, Night 7 game-min (tuned with headless bot runs) |
 
 ---
 
 ## 2. Folder structure
 
 ```
-gurugram-racer/
-├─ index.html
-├─ package.json
-├─ vite.config.js            # base: '/gurugram-racer/'
+gurugramRacer/
+├─ index.html                # canvas + HUD/menu containers + CSS
+├─ vite.config.js            # base: '/gurugramRacer/'
 ├─ .github/workflows/deploy.yml
-├─ PLAN.md                   # this file
-├─ CLAUDE.md                 # short rules for Claude Code (see §11)
 └─ src/
-   ├─ main.js                # Phaser game config, scene list
-   ├─ config.js              # tunables: speeds, time scale, colors
-   ├─ data/
-   │  ├─ map.js              # junctions + roads
-   │  ├─ missions.js         # mission definitions
-   │  └─ jokes.js            # all Hinglish lines (fail roasts, toasts, signboards)
-   ├─ scenes/
-   │  ├─ BootScene.js        # generate all textures in code
-   │  ├─ MenuScene.js        # title + mission select
-   │  ├─ GameScene.js        # the ride
-   │  ├─ HUDScene.js         # timer, speed, minimap, toasts (runs on top)
-   │  └─ ResultScene.js      # win / fail + roast line
-   ├─ objects/
-   │  ├─ Bike.js
-   │  ├─ TrafficCar.js
-   │  └─ events/             # Cow.js, Thar.js, Waterlogging.js, Challan.js, GaagluMaps.js
-   └─ systems/
-      ├─ MapRenderer.js      # draws roads/junctions/buildings from map.js
-      ├─ TrafficSystem.js    # spawns NPCs along road segments
-      ├─ EventSystem.js      # triggers humor events
-      └─ NightFog.js         # darkness + headlight + fog overlay
+   ├─ config.js              # all tunables
+   ├─ data/                  # map.js, missions.js, jokes.js, landmarks.js
+   ├─ core/                  # engine-free: Game, TrafficSystem/TrafficCar, EventSystem + events/, Specials
+   ├─ objects/BikePhysics.js # engine-free bike handling
+   ├─ systems/               # RoadNet (geometry + routing), CityLayout (placement), Clock, Save
+   └─ 3d/                    # Three.js view: World, City3D, Landmarks, VehicleModels, Props3D,
+                             # BikeModel, ChaseCamera, Hud (HTML), Screens (HTML), main.js
 ```
+
+(The original 2D Phaser plan below is kept for history; §1b/§1c override it.)
 
 ---
 

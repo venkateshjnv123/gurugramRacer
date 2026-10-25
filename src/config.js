@@ -12,10 +12,16 @@ export const BIKE = {
   brake: 350,
   drag: 110,
   reverseSpeed: 45,
-  turnRate: 150,       // degrees/s
+  turnRate: 140,       // degrees/s at low speed
+  turnRateFast: 75,    // degrees/s at max speed (calmer, wider turns)
+  steerIn: 6,          // how fast steering ramps to full lock (per s) — 0→1 in ~0.17s
+  steerOut: 10,        // how fast it re-centres when released
   galiMultiplier: 0.7, // potholes: slower + camera shake
   radius: 10,          // collision radius vs walls
-  wallScrape: 0.92,    // speed kept per frame while grinding a wall
+  wallFriction: 3,     // speed lost per second while pushing into a kerb (scaled by how hard)
+  wallSlide: 10,       // how fast the heading turns parallel to a kerb you're scraping (per s)
+  wallImpact: 0.5,     // speed kept after a near head-on hit
+  subStep: 1 / 120,    // physics runs in fixed steps no bigger than this (frame-rate independent)
   kmhPerPx: 60 / 160,  // fake speedo: maxSpeed shows as 60 km/h
 };
 
@@ -55,16 +61,7 @@ export const SPECIALS = {
 };
 
 export const NIGHT = {
-  darkness: 0.88,      // alpha of the night layer
-  coneLength: 420,     // headlight reach (px)
-  coneSpread: 0.42,    // half-angle (radians)
-  glowRadius: 70,      // light around the bike
-  tailLightRange: 900, // NPC tail lights visible from this far
-  fogAlpha: 0.4,
-  dayFogAlpha: 0.75,   // 'Delhi-NCR November' mode
-  dayHaze: 0.35,
-  fogDrift: [14, 5],   // px/s
-  truckWindow: [0.15, 0.45],
+  truckWindow: [0.15, 0.45], // invisible truck appears in this fraction of the time limit
   truckSpeed: 45,
 };
 
@@ -108,12 +105,8 @@ export const LANES = {
 export const COLORS = {
   ground: 0xd8c8a0,
   road: 0x3a3a3a,
-  gali: 0x6b5a45,
   kerb: 0xa89f8c,
-  lane: 0xffffff,
-  divider: 0xe8c547,
   hot: 0xff6a2a,
-  sign: 0x1f7a3a,
   glass: [0x5b8fc9, 0x4a7fb8, 0x6fa4d6, 0x3d6fa3],
   shops: [0xc96f4a, 0xd9b44a, 0x8fa35b, 0xb85b7f, 0x7f6fb8, 0xd98a4a],
   houses: [0x9c9488, 0xb3a894, 0x8a8478, 0xc2b8a3],

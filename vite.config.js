@@ -2,6 +2,6 @@
 export default {
   base: '/gurugramRacer/',
   build: {
-    chunkSizeWarningLimit: 1600, // Phaser alone is ~1.2 MB
+    chunkSizeWarningLimit: 800, // Three.js alone is ~550 KB
   },
 };

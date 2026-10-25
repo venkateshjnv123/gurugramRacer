@@ -1,13 +1,13 @@
-import Phaser from 'phaser';
 import { EVENTS, LANES } from '../../config.js';
 import { EVENTS as LINES } from '../../data/jokes.js';
+import { clamp } from '../rand.js';
 
 // An auto appears just ahead in the next lane and swerves into yours.
 export default class AutoCut {
   constructor(sys) {
     this.sys = sys;
     this.times = [];
-    for (let i = 0; i < EVENTS.autoRepeats; i++) this.times.push(sys.randomTime(EVENTS.autoWindow) + i * 0.15 * sys.scene.limit);
+    for (let i = 0; i < EVENTS.autoRepeats; i++) this.times.push(sys.randomTime(EVENTS.autoWindow) + i * 0.15 * sys.game.limit);
     this.times.sort((a, b) => a - b);
   }
 
@@ -22,7 +22,7 @@ export default class AutoCut {
     const limit = road.hw - 14;
     let n = info.n + (Math.random() < 0.5 ? 1 : -1) * LANES.width;
     if (Math.abs(n) > limit) n = info.n - Math.sign(n - info.n) * LANES.width;
-    n = Phaser.Math.Clamp(n, -limit, limit);
+    n = clamp(n, -limit, limit);
     const npc = sys.traffic.spawn('auto', road, info.dir, 0, info.t + 170, sys.bike.speed * 0.55);
     npc.n = n;
     npc.targetN = info.n;

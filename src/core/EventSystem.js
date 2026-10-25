@@ -1,70 +1,72 @@
-import Phaser from 'phaser';
 import { EVENTS } from '../config.js';
-import Cow from '../objects/events/Cow.js';
-import Thar from '../objects/events/Thar.js';
-import AutoCut from '../objects/events/AutoCut.js';
-import Challan from '../objects/events/Challan.js';
-import Construction from '../objects/events/Construction.js';
-import Waterlogging from '../objects/events/Waterlogging.js';
-import GaagluMaps from '../objects/events/GaagluMaps.js';
-import UTurn from '../objects/events/UTurn.js';
-import InvisibleTruck from '../objects/events/InvisibleTruck.js';
+import { floatBetween, pick } from './rand.js';
+import Cow from './events/Cow.js';
+import Thar from './events/Thar.js';
+import AutoCut from './events/AutoCut.js';
+import Challan from './events/Challan.js';
+import Construction from './events/Construction.js';
+import Waterlogging from './events/Waterlogging.js';
+import GaagluMaps from './events/GaagluMaps.js';
+import UTurn from './events/UTurn.js';
+import InvisibleTruck from './events/InvisibleTruck.js';
 
 const TYPES = {
   cow: Cow, thar: Thar, auto: AutoCut, challan: Challan, construction: Construction,
   waterlogging: Waterlogging, gaaglu: GaagluMaps, uturn: UTurn, invisibleTruck: InvisibleTruck,
 };
 
-// Runs the humor events listed in the mission. Also owns solid obstacles (cows, barriers)
-// and minimap marks, which events add.
+// No-op props for headless runs (tests). Views pass a real implementation.
+export const NULL_PROPS = {
+  add: () => ({ set() {}, remove() {}, emit() {} }),
+};
+
+// Runs the humor events listed in the mission. Owns solid obstacles (cows, barriers)
+// and minimap marks, which events add. Visuals go through `game.props`.
 export default class EventSystem {
-  constructor(scene) {
-    this.scene = scene;
-    this.net = scene.net;
-    this.bike = scene.bike;
-    this.traffic = scene.traffic;
+  constructor(game) {
+    this.game = game;
+    this.net = game.net;
+    this.bike = game.bike;
+    this.traffic = game.traffic;
+    this.props = game.props;
     this.solids = [];
-    this.marks = [];          // minimap: { x, y, color }
+    this.marks = [];          // minimap: { x, y, color, cross? }
     this.usedRoads = new Set();
     this.hitCooldown = 0;
     this.gaagluUntil = -1;
     this.items = [];
-    for (const id of scene.mission.events) {
+    for (const id of game.mission.events) {
       if (TYPES[id]) this.items.push(new TYPES[id](this));
     }
   }
 
   get elapsed() {
-    return this.scene.elapsed;
-  }
-
-  get(type) {
-    return this.items.find((e) => e instanceof type);
+    return this.game.elapsed;
   }
 
   toast(text) {
-    this.scene.toast(text);
+    this.game.toast(text);
   }
 
   randomTime([a, b]) {
-    return Phaser.Math.FloatBetween(a, b) * this.scene.limit;
+    return floatBetween(a, b) * this.game.limit;
   }
 
   // Direction the mission route travels along a road (1 = a → b), or null if not on route
   routeDir(road) {
-    const { roads, ids } = this.scene.route;
+    const { roads, ids } = this.game.route;
     const i = roads.indexOf(road);
     if (i < 0) return null;
     return road.a.id === ids[i] ? 1 : -1;
   }
 
-  // A random road on the route not used by another event. Skips the first road (where you spawn)
+  // A random route road not used by another event. Skips the first road (where you spawn)
   // unless the route is too short to spare it.
   pickRouteRoad(filter = () => true) {
-    const { roads } = this.scene.route;
+    const { roads } = this.game.route;
     const options = roads.filter((r, i) => (i > 0 || roads.length <= 2) && !this.usedRoads.has(r.index) && filter(r));
     if (!options.length) return null;
-    const road = Phaser.Utils.Array.GetRandom(options);
+    const road = pick(options);
     this.usedRoads.add(road.index);
     return road;
   }
@@ -126,7 +128,7 @@ export default class EventSystem {
       b.speed = -Math.abs(b.speed) * 0.3;
       if (hard && this.hitCooldown <= 0) {
         this.hitCooldown = 1.2;
-        this.scene.onCrash(null, { penalty: false });
+        this.game.onCrash(null, { penalty: false });
       }
     }
   }

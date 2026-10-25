@@ -6,6 +6,7 @@ export const JUNCTIONS = [
   { id: 'cyberhub',    name: 'DLF Cyber Hub',     x: 2500, y: 520,  hot: true  },
   { id: 'sikanderpur', name: 'Sikanderpur Metro', x: 2250, y: 250,  hot: false },
   { id: 'mgroad',      name: 'MG Road',           x: 1750, y: 330,  hot: false },
+  { id: 'shankar',     name: 'Shankar Chowk',     x: 2347, y: 612,  hot: true  }, // where GCR crosses NH-48
   { id: 'iffco',       name: 'IFFCO Chowk',       x: 2000, y: 820,  hot: true  }, // signal loop
   { id: 'signature',   name: 'Signature Tower',   x: 1500, y: 1100, hot: false },
   { id: 'rajiv',       name: 'Rajiv Chowk',       x: 1000, y: 1400, hot: true  },
@@ -21,14 +22,16 @@ export const JUNCTIONS = [
 // type: highway (3 lanes/side, fast, jams), main (2 lanes/side), gali (1 lane/side, shortcut, potholes)
 export const ROADS = [
   { from: 'ambience',    to: 'cyberhub',    type: 'highway', name: 'NH-48' },
-  { from: 'cyberhub',    to: 'iffco',       type: 'highway', name: 'NH-48' },
+  { from: 'cyberhub',    to: 'shankar',     type: 'highway', name: 'NH-48' },
+  { from: 'shankar',     to: 'iffco',       type: 'highway', name: 'NH-48' },
   { from: 'iffco',       to: 'signature',   type: 'highway', name: 'NH-48' },
   { from: 'signature',   to: 'rajiv',       type: 'highway', name: 'NH-48' },
   { from: 'rajiv',       to: 'herohonda',   type: 'highway', name: 'NH-48' },
   { from: 'cyberhub',    to: 'sikanderpur', type: 'main',    name: 'Cyber City Rd' },
   { from: 'sikanderpur', to: 'mgroad',      type: 'main',    name: 'MG Road' },
   { from: 'mgroad',      to: 'iffco',       type: 'main',    name: 'MG Road' },
-  { from: 'sikanderpur', to: 'gcr',         type: 'main',    name: 'Golf Course Road' },
+  { from: 'sikanderpur', to: 'shankar',     type: 'main',    name: 'Golf Course Road' },
+  { from: 'shankar',     to: 'gcr',         type: 'main',    name: 'Golf Course Road' },
   { from: 'gcr',         to: 'sector54',    type: 'main',    name: 'Golf Course Road' },
   { from: 'sector54',    to: 'bakhtawar',   type: 'main',    name: 'GC Extension Rd' },
   { from: 'rajiv',       to: 'subhash',     type: 'main',    name: 'Sohna Road' },

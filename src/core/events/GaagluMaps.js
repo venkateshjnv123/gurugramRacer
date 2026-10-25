@@ -1,7 +1,7 @@
 import { EVENTS } from '../../config.js';
 import { EVENTS as LINES } from '../../data/jokes.js';
 
-// For a while the destination arrow confidently points at the nearest jam instead.
+// For a while the GPS arrow confidently points at the nearest jam instead.
 export default class GaagluMaps {
   constructor(sys) {
     this.sys = sys;

@@ -8,17 +8,19 @@ const MARK_PERIOD = 100; // world units of road covered by one repeat of the lan
 
 // Builds the static city from RoadNet: ground, roads, kerbs, junctions, buildings, trees, signs.
 export default class City3D {
-  constructor(scene, net) {
+  // reserved: circles { x, y, r } to keep free of generic buildings (landmarks etc.)
+  constructor(scene, net, reserved = []) {
     this.scene = scene;
     this.net = net;
     this.group = new THREE.Group();
     scene.add(this.group);
+    this.windowMats = [];
 
     this.addGround();
     this.addRoads();
     this.addJunctions();
     this.addKerbs();
-    const buildings = layoutBuildings(net);
+    const buildings = layoutBuildings(net, 7, reserved);
     this.addBuildings(buildings);
     this.addTrees(layoutTrees(net, buildings));
     this.addSigns();
@@ -171,18 +173,21 @@ export default class City3D {
     this.group.add(mesh);
   }
 
-  windowTexture(cols, rows, glass) {
+  // lit = night version: random windows glow yellow on black (used as emissive map)
+  windowTexture(cols, rows, glass, lit = false) {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 256;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = lit ? '#000000' : '#ffffff';
     ctx.fillRect(0, 0, 128, 256);
     const cw = 128 / cols;
     const rh = 256 / rows;
+    const rng = mulberry32(cols * 31 + rows);
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        ctx.fillStyle = glass ? 'rgba(20,40,70,0.55)' : 'rgba(40,40,40,0.45)';
+        if (lit) ctx.fillStyle = rng() < 0.55 ? '#ffd98a' : '#000000';
+        else ctx.fillStyle = glass ? 'rgba(20,40,70,0.55)' : 'rgba(40,40,40,0.45)';
         ctx.fillRect(c * cw + cw * 0.18, r * rh + rh * 0.2, cw * 0.64, rh * 0.55);
       }
     }
@@ -191,11 +196,26 @@ export default class City3D {
     return tex;
   }
 
+  windowMaterial(cols, rows, glass) {
+    const m = new THREE.MeshLambertMaterial({
+      map: this.windowTexture(cols, rows, glass),
+      emissiveMap: this.windowTexture(cols, rows, glass, true),
+      emissive: 0xffffff,
+      emissiveIntensity: 0,
+    });
+    this.windowMats.push(m);
+    return m;
+  }
+
+  setNight(on) {
+    for (const m of this.windowMats) m.emissiveIntensity = on ? 0.9 : 0;
+  }
+
   addBuildings(buildings) {
     const groups = {
-      lavish: { list: [], mat: new THREE.MeshLambertMaterial({ map: this.windowTexture(5, 22, true) }), colors: COLORS.glass },
-      shops: { list: [], mat: new THREE.MeshLambertMaterial({ map: this.windowTexture(2, 2, false) }), colors: COLORS.shops },
-      normal: { list: [], mat: new THREE.MeshLambertMaterial({ map: this.windowTexture(3, 5, false) }), colors: COLORS.houses },
+      lavish: { list: [], mat: this.windowMaterial(5, 22, true), colors: COLORS.glass },
+      shops: { list: [], mat: this.windowMaterial(2, 2, false), colors: COLORS.shops },
+      normal: { list: [], mat: this.windowMaterial(3, 5, false), colors: COLORS.houses },
     };
     for (const b of buildings) groups[b.zone].list.push(b);
 

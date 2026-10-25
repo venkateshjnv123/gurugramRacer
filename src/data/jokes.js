@@ -92,3 +92,15 @@ export const PRAISE = [
   'Bhai tu toh rapido ka CEO banega.',
   'Sohna Road pe aisi riding? Respect.',
 ];
+
+// Roadside hoardings along the highways
+export const BILLBOARDS = [
+  'Plot in Sohna — sirf ₹2 crore!',
+  'IIT guaranteed coaching · Sector 14',
+  'Naya flyover: bas 2 mahine aur (since 2019)',
+  'Gaaglu Maps — hum pe bharosa rakho',
+  'Luxury 4BHK ₹40 Cr · parking extra',
+  'Momos ₹60 · Chai ₹40 · WiFi free',
+  'Smog? Humara air purifier lo!',
+  'Weekend getaway: Sohna Road traffic',
+];

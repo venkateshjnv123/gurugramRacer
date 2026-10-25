@@ -13,6 +13,13 @@ export default class ChaseCamera {
     this.mode = 0;
     this.yaw = null; // smoothed heading the camera follows
     this.shake = 0;
+    this.shakeAmp = 3;
+  }
+
+  // camera shake for `time` seconds with `amp` world units
+  kick(time, amp) {
+    this.shake = Math.max(this.shake, time);
+    this.shakeAmp = amp;
   }
 
   cycle() {
@@ -39,7 +46,8 @@ export default class ChaseCamera {
     }
     if (this.shake > 0) {
       this.shake -= dt;
-      this.camera.position.y += (Math.random() - 0.5) * 3;
+      this.camera.position.x += (Math.random() - 0.5) * this.shakeAmp;
+      this.camera.position.y += (Math.random() - 0.5) * this.shakeAmp;
     }
     this.camera.lookAt(bike.x + fx * m.look, 12, bike.y + fz * m.look);
   }
