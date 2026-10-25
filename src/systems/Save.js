@@ -31,3 +31,17 @@ export function submitBest(missionId, gameSeconds) {
   }
   return false;
 }
+
+// Rage-quit stats (local only): fails per junction
+export function recordFail(junctionId) {
+  const fails = load('fails', {});
+  fails[junctionId] = (fails[junctionId] ?? 0) + 1;
+  save('fails', fails);
+}
+
+export function worstJunction() {
+  const fails = load('fails', {});
+  let worst = null;
+  for (const [id, n] of Object.entries(fails)) if (!worst || n > worst.n) worst = { id, n };
+  return worst?.id ?? null;
+}

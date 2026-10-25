@@ -9,7 +9,7 @@ import TrafficSystem from '../systems/TrafficSystem.js';
 import EventSystem from '../systems/EventSystem.js';
 import Specials from '../systems/Specials.js';
 import NightFog from '../systems/NightFog.js';
-import { load } from '../systems/Save.js';
+import { load, recordFail } from '../systems/Save.js';
 
 const WIN_RADIUS = 80;
 
@@ -145,6 +145,7 @@ export default class GameScene extends Phaser.Scene {
   finish(win, reason) {
     if (this.over) return;
     this.over = true;
+    if (!win) recordFail(this.net.nearestJunction(this.bike.x, this.bike.y).id);
     const leftFrac = this.timeLeft / this.limit;
     let stars = 0;
     if (win) stars = leftFrac > STARS.three ? 3 : leftFrac > STARS.two ? 2 : 1;

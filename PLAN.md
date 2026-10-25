@@ -44,7 +44,8 @@
 | U-turn | GCR's left carriageway barricaded + central divider (`EVENTS.uturnLength`): ride wrong-side till the divider ends, or detour |
 | Challan | Shown as blue dot on minimap so you can plan a gali detour |
 | Cows | A row of cows walls off the whole road; they leave 8s after you arrive |
-| Time limits | Interview 13, Cake 8, Chai 6, Rain 7, Night 7 game-min (from bot calibration runs; re-tune in Phase 6) |
+| Time limits | Interview 13, Cake 9, Chai 6, Rain 7, Night 8 game-min — tuned in Phase 6 so a decent bot rider finishes with ~10–20% left (Chai estimated by hand: bot can't solve the U-turn) |
+| Pause | Esc is owned by HUDScene (both scenes hear the key); R = restart, Q = menu |
 | Horn before Phase 7 | Visual only (toast/ripple); M key is a stub until sound exists |
 
 ---

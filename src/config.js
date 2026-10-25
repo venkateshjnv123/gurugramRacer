@@ -49,8 +49,8 @@ export const SPECIALS = {
   cakeHit: 20,          // % lost per collision
   chaiStart: 90,        // °C
   chaiCold: 45,         // °C = fail
-  chaiStuckFactor: 2.5, // cools faster when you're not moving
-  chaiBudget: 1.15,     // riding non-stop, chai goes cold at this × time limit
+  chaiStuckFactor: 1.8, // cools faster when you're not moving
+  chaiBudget: 1.4,      // riding non-stop, chai goes cold at this × time limit
   rainAt: 0.5,          // fraction of time limit
 };
 

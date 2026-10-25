@@ -1,6 +1,15 @@
 // All player-facing Hinglish lines (except mission titles/briefs, which live in missions.js).
 
 export const UI = {
+  tagline: 'Gurugram mein time pe pahunchna = asli boss fight',
+  pauseTitle: 'Chai break ☕',
+  pauseHint: 'Esc = wapas chalo  ·  R = restart  ·  Q = menu',
+  share: 'S = Share',
+  copied: 'Link copy ho gaya! Dosto ko bhej 📋',
+  copyFailed: 'Copy nahi hua. Link: ',
+  shareWin: (time, from, to, url) => `Main ${time} mein ${from} se ${to} pahunch gaya 🏍️ Tu kar ke dikha: ${url}`,
+  shareFail: (title, url) => `"${title}" mein Gurugram ne mujhe hara diya 😭 Tu kar ke dikha: ${url}`,
+  rageQuit: (name) => `Sabse zyada log yahan haare: ${name} 😤`,
   menuHint: '↑ ↓ choose  ·  Enter = chalo',
   controls: 'Arrows / WASD = chalao  ·  Shift = brake  ·  Space = horn  ·  Esc = pause',
   best: (t) => `Best: ${t}`,

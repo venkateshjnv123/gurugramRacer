@@ -40,6 +40,24 @@ export default class HUDScene extends Phaser.Scene {
     this.miniStatic = this.add.graphics();
     this.miniDots = this.add.graphics();
 
+    this.pause = this.add.container(0, 0).setVisible(false).setDepth(100);
+    this.pauseBg = this.add.rectangle(0, 0, 10, 10, 0x000000, 0.7).setOrigin(0);
+    this.pauseTitle = this.add.text(0, 0, UI.pauseTitle, style(48)).setOrigin(0.5);
+    this.pauseHint = this.add.text(0, 0, UI.pauseHint, style(20, '#dddddd')).setOrigin(0.5);
+    this.pause.add([this.pauseBg, this.pauseTitle, this.pauseHint]);
+    // Esc is handled here only (both scenes hear the key; one owner avoids pause→resume in one press)
+    const kb = this.input.keyboard;
+    kb.on('keydown-ESC', () => {
+      if (this.pause.visible) this.resumeGame();
+      else if (!this.g.over) this.pauseGame();
+    });
+    kb.on('keydown-R', () => this.pause.visible && this.g.scene.restart({ missionId: m.id }));
+    kb.on('keydown-Q', () => {
+      if (!this.pause.visible) return;
+      this.scene.stop('Game');
+      this.scene.start('Menu', { selected: 0 });
+    });
+
     this.layout();
     this.scale.on('resize', this.layout, this);
     this.events.once('shutdown', () => {
@@ -55,6 +73,9 @@ export default class HUDScene extends Phaser.Scene {
     this.mini.x = width - MINI_W - 16;
     this.mini.y = height - this.mini.h - 16;
     this.rainTint.setSize(width, height);
+    this.pauseBg.setSize(width, height);
+    this.pauseTitle.setPosition(width / 2, height / 2 - 30);
+    this.pauseHint.setPosition(width / 2, height / 2 + 30);
     this.drawMiniStatic();
     this.layoutToasts();
   }
@@ -73,6 +94,16 @@ export default class HUDScene extends Phaser.Scene {
       g.lineStyle(r.type === 'highway' ? 4 : r.type === 'main' ? 3 : 2, r.type === 'gali' ? 0x9c7a4a : 0xcccccc, 1);
       g.lineBetween(a.x, a.y, b.x, b.y);
     }
+  }
+
+  pauseGame() {
+    this.g.scene.pause();
+    this.pause.setVisible(true);
+  }
+
+  resumeGame() {
+    this.pause.setVisible(false);
+    this.g.scene.resume();
   }
 
   startRain() {

@@ -20,6 +20,11 @@ export default class MenuScene extends Phaser.Scene {
       fontFamily: 'sans-serif', fontSize: '56px', fontStyle: 'bold', color: '#f1c40f',
     }).setOrigin(0.5);
 
+    this.tagline = this.add.text(0, 0, UI.tagline, {
+      fontFamily: 'sans-serif', fontSize: '20px', fontStyle: 'italic', color: '#cfcfcf',
+    }).setOrigin(0.5);
+    this.bikeIcon = this.add.image(0, 0, 'bike').setRotation(Math.PI / 2).setScale(1.6);
+
     MISSIONS.forEach((m, i) => {
       const t = this.add.text(0, 0, `${i + 1}. ${m.title}`, {
         fontFamily: 'sans-serif', fontSize: '26px', color: '#ffffff', padding: { x: 14, y: 6 },
@@ -62,8 +67,13 @@ export default class MenuScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const top = Math.max(60, height / 2 - 260);
     this.title.setPosition(width / 2, top);
-    this.items.forEach((t, i) => t.setPosition(width / 2, top + 110 + i * 52));
-    this.brief.setPosition(width / 2, top + 110 + MISSIONS.length * 52 + 50);
+    this.tagline.setPosition(width / 2, top + 48);
+    this.tweens.killTweensOf(this.bikeIcon);
+    this.bikeIcon.setPosition(width / 2 - 260, top + 78);
+    this.tweens.add({ targets: this.bikeIcon, x: width / 2 + 260, duration: 2600, yoyo: true, repeat: -1,
+      onYoyo: () => this.bikeIcon.setRotation(-Math.PI / 2), onRepeat: () => this.bikeIcon.setRotation(Math.PI / 2) });
+    this.items.forEach((t, i) => t.setPosition(width / 2, top + 130 + i * 50));
+    this.brief.setPosition(width / 2, top + 130 + MISSIONS.length * 50 + 40);
     this.fogText.setPosition(width / 2, height - 100);
     this.hint.setPosition(width / 2, height - 50);
   }
