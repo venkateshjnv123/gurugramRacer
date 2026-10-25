@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gurugram Racer 3D</title>
+    <link rel="icon" href="data:," />
+    <style>
+      html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: sans-serif; }
+      #game { position: fixed; inset: 0; }
+      #hud { position: fixed; inset: 0; pointer-events: none; color: #fff; text-shadow: 0 1px 3px #000; }
+      .panel { position: absolute; background: rgba(0,0,0,0.45); padding: 8px 12px; border-radius: 8px; font-weight: bold; }
+      .tl { top: 12px; left: 12px; } .tr { top: 12px; right: 12px; text-align: right; }
+      .bl { bottom: 12px; left: 12px; font-size: 13px; font-weight: normal; }
+      .big { font-size: 26px; }
+      #gps { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); }
+      #gps svg { transition: transform 0.15s linear; }
+      #mini { position: absolute; right: 12px; bottom: 12px; border-radius: 6px; }
+      #msg { display: none; position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(20,48,31,0.9);
+             padding: 20px 36px; border-radius: 12px; font-size: 40px; font-weight: bold; text-align: center; color: #2ecc71; }
+      #msg small { display: block; font-size: 18px; color: #fff; margin-top: 8px; }
+    </style>
+  </head>
+  <body>
+    <div id="game"></div>
+    <div id="hud"></div>
+    <script type="module" src="/src/3d/main.js"></script>
+  </body>
+</html>

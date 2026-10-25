@@ -48,6 +48,19 @@
 | Pause | Esc is owned by HUDScene (both scenes hear the key); R = restart, Q = menu |
 | Horn before Phase 7 | Visual only (toast/ripple); M key is a stub until sound exists |
 
+### 1c. 3D direction (2026-10-26) — prototype stage
+
+Playtest feedback: the north-up top-down view is hard to play (← turns the bike *right* when it faces down the screen).
+Decision: **prototype option C — real 3D, low-poly, chase camera behind the rider**, rendered with **Three.js 0.186.1**
+(approved addition). Everything is still generated in code (boxes, cylinders, canvas textures) — no downloaded assets.
+
+- Prototype lives beside the Phaser game: `proto3d.html` → `src/3d/`. The Phaser game is untouched until the prototype is approved.
+- Reused as-is: `data/map.js`, `config.js`, `systems/RoadNet.js`. Bike physics extracted to `objects/BikePhysics.js` (shared).
+- Prototype scope: 3D city (roads, junctions, buildings, signboards, trees), bike + rider model, chase camera
+  (C cycles close / mid / high), road-only walls, speedometer, minimap, direction arrow, free ride Ambience → Vatika.
+  No traffic, events or missions yet.
+- If approved, the port plan: 3D city + riding → HTML HUD/menus → traffic models → events/night → tune + ship.
+
 ---
 
 ## 2. Folder structure
