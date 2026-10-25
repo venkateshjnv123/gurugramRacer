@@ -36,9 +36,26 @@ export const STARS = {
 
 export const TRAFFIC = {
   maxNpcs: 40,
-  jamRadius: 250,
-  signalRed: 20,  // real seconds
+  jamRadius: 400,      // NPCs this close to a red hot junction queue up
+  signalRed: 20,       // real seconds
   signalGreen: 6,
+  spawnMin: 900,       // spawn ring around the bike (px)
+  spawnMax: 2000,
+  despawn: 2400,
+  density: { highway: 3, main: 1.5, gali: 0.4 }, // spawn weight per px of road
+  speed: { highway: [120, 145], main: [95, 120], gali: [60, 80] },
+  kindSpeed: { car: 1, auto: 0.75, bus: 0.6, truck: 0.6, thar: 1.6 },
+  mix: {
+    highway: { car: 0.6, auto: 0.2, bus: 0.1, truck: 0.1 },
+    main: { car: 0.55, auto: 0.35, bus: 0.1 },
+    gali: { car: 0.5, auto: 0.5 },
+  },
+  accel: 120,
+  decel: 320,
+  bikeHitRadius: 6,    // bike is narrow: can squeeze between stopped cars
+  crashCooldown: 1.2,  // seconds between crash penalties
+  hornCooldown: 0.6,
+  hornMiracleChance: 0.1,
 };
 
 // Lanes per side of the road; road width = 2 * lanes * width
@@ -46,7 +63,7 @@ export const LANES = {
   highway: 3,
   main: 2,
   gali: 1,
-  width: 30,
+  width: 36,
 };
 
 export const COLORS = {
@@ -61,4 +78,5 @@ export const COLORS = {
   glass: [0x5b8fc9, 0x4a7fb8, 0x6fa4d6, 0x3d6fa3],
   shops: [0xc96f4a, 0xd9b44a, 0x8fa35b, 0xb85b7f, 0x7f6fb8, 0xd98a4a],
   houses: [0x9c9488, 0xb3a894, 0x8a8478, 0xc2b8a3],
+  cars: [0xecf0f1, 0xc0392b, 0x7f8c8d, 0x2c3e50, 0x2980b9, 0xbdc3c7],
 };

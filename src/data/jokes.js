@@ -19,6 +19,22 @@ export const UI = {
   penalty: (s) => `−${s} sec`,
 };
 
+export const CRASH = [
+  'Bhai dekh ke!',
+  'Dikhta nahi kya?',
+  'Papa ki gaadi hai kya?',
+  'Insurance hai na?',
+];
+
+export const HORN = {
+  miracle: 'Miracle ho gaya 🙏',
+  ignored: [
+    'Horn bajao, kuch nahi hoga.',
+    'Aage wala: *volume badha deta hai*',
+    'Bhai ne suna, ignore kiya.',
+  ],
+};
+
 export const FAIL_REASON = {
   time: 'Time khatam.',
 };

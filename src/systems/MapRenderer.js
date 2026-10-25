@@ -102,7 +102,7 @@ export default class MapRenderer {
     }
     for (const j of junctions) {
       g.fillStyle(COLORS.road, 1).fillCircle(j.x, j.y, j.radius);
-      if (j.hot) g.fillStyle(COLORS.hot, 0.22).fillCircle(j.x, j.y, j.radius);
+      if (j.hot) g.lineStyle(6, COLORS.hot, 0.8).strokeCircle(j.x, j.y, j.radius - 8);
     }
 
     // potholes on galis

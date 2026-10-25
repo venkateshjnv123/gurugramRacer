@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
-import { WORLD, COLORS, TIME, STARS } from '../config.js';
+import { WORLD, COLORS, TIME, STARS, PENALTY, TRAFFIC } from '../config.js';
 import { MISSIONS } from '../data/missions.js';
-import { UI, FAIL_REASON } from '../data/jokes.js';
+import { UI, FAIL_REASON, CRASH, HORN } from '../data/jokes.js';
 import RoadNet from '../systems/RoadNet.js';
 import MapRenderer from '../systems/MapRenderer.js';
 import Bike from '../objects/Bike.js';
+import TrafficSystem from '../systems/TrafficSystem.js';
 
 const WIN_RADIUS = 80;
 
@@ -28,6 +29,9 @@ export default class GameScene extends Phaser.Scene {
     const first = this.net.junction(this.route.ids[1]);
     this.bike = new Bike(this, this.net, this.from.x, this.from.y,
       Math.atan2(first.y - this.from.y, first.x - this.from.x));
+
+    this.traffic = new TrafficSystem(this, this.net, this.bike);
+    this.hornCooldown = 0;
 
     this.limit = (m.minutes * 60) / TIME.scale; // real seconds
     this.elapsed = 0;
@@ -72,6 +76,20 @@ export default class GameScene extends Phaser.Scene {
     this.toast(text ? `${text}  ${UI.penalty(realSeconds * TIME.scale)}` : UI.penalty(realSeconds * TIME.scale));
   }
 
+  onCrash() {
+    this.cameras.main.shake(150, 0.008);
+    this.penalize(PENALTY.crash, Phaser.Utils.Array.GetRandom(CRASH));
+    this.events.emit('crash');
+  }
+
+  honk() {
+    const ring = this.add.image(this.bike.x, this.bike.y, 'ring').setDepth(11).setScale(0.3);
+    this.tweens.add({ targets: ring, scale: 4, alpha: 0, duration: 450, onComplete: () => ring.destroy() });
+    const result = this.traffic.honk();
+    if (result === 'miracle') this.toast(HORN.miracle);
+    else if (result === 'ignored' && Math.random() < 0.35) this.toast(Phaser.Utils.Array.GetRandom(HORN.ignored));
+  }
+
   readInput() {
     const k = this.keys;
     return {
@@ -88,6 +106,13 @@ export default class GameScene extends Phaser.Scene {
     const dt = Math.min(delta, 50) / 1000;
     this.elapsed += dt;
     this.bike.update(dt, this.readInput());
+    this.traffic.update(dt);
+
+    this.hornCooldown -= dt;
+    if (this.keys.SPACE.isDown && this.hornCooldown <= 0) {
+      this.hornCooldown = TRAFFIC.hornCooldown;
+      this.honk();
+    }
 
     if (!this.warnedLow && this.timeLeft * TIME.scale < 120) {
       this.warnedLow = true;
