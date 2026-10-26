@@ -19,12 +19,13 @@ export default class Thar {
       const t = info.road.len - (info.t + 800);
       const npc = sys.traffic.spawn('thar', info.road, dir, 0, t, EVENTS.tharSpeed);
       npc.n = npc.targetN = -info.n;
-      npc.reckless = npc.ignoresSignals = npc.despawnAtEnd = true;
+      npc.reckless = npc.ignoresSignals = npc.despawnAtEnd = npc.impatient = true;
       npc.laneChangeTimer = Infinity;
       npc.lateralSpeed = 30;
       npc.place();
       this.npc = npc;
       sys.toast(LINES.thar);
+      sys.game.emit('sfx', 'tharHorn');
     }
     // keeps lining up with you until it's close
     const npc = this.npc;

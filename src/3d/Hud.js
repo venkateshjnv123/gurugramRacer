@@ -19,10 +19,12 @@ export default class Hud {
         <div id="h-bar" class="bar"><div id="h-bar-text"></div><div class="track"><div id="h-bar-fill"></div></div></div>
       </div>
       <div class="panel tr"><div id="h-speed" class="big"></div><div id="h-cam" class="dim"></div></div>
+      <div id="sig" class="panel"><div class="lamps"><i class="red"></i><i class="amber"></i><i class="green"></i></div><div id="sig-n"></div><div id="sig-msg" class="dim"></div></div>
       <div id="gps"><svg viewBox="0 0 40 40" width="64" height="64"><path d="M20 3 L34 34 L20 26 L6 34 Z" fill="#2ecc71" stroke="#fff" stroke-width="2.5"/></svg><div id="h-next"></div></div>
       <div id="toasts"></div>
       <canvas id="mini" width="${MINI_W}" height="${Math.round((MINI_W * WORLD.height) / WORLD.width)}"></canvas>
-      <div class="panel bl">${UI.controls} · C = camera</div>`;
+      <div class="panel bl">${UI.controls} · C = camera</div>
+      <div id="stunned"></div>`;
     this.mini = document.getElementById('mini');
     this.s = MINI_W / WORLD.width;
     this.toasts = [];
@@ -92,6 +94,19 @@ export default class Hud {
     document.getElementById('h-left').style.color = gameLeft < 120 ? '#ff4d4d' : '#fff';
     this.set('h-speed', `${Math.round(Math.abs(b.speed) * BIKE.kmhPerPx)} km/h`);
     this.set('h-cam', `Camera: ${CAMERA_MODES[chase.mode].name}`);
+
+    // the signal you're riding into
+    const sig = g.signalAhead();
+    const sigEl = document.getElementById('sig');
+    sigEl.style.display = sig ? 'block' : 'none';
+    if (sig) {
+      sigEl.dataset.state = sig.state;
+      this.set('sig-n', String(Math.ceil(sig.left)));
+      this.set('sig-msg', sig.state === 'green' ? UI.sigGo : sig.state === 'amber' ? UI.sigAmber : UI.sigStop);
+    }
+    const down = b.stun > 0 ? UI.stunned : b.stall > 0 ? UI.stalled : '';
+    this.set('stunned', down);
+    document.getElementById('stunned').style.display = down ? 'block' : 'none';
 
     const bar = g.specials.bar();
     document.getElementById('h-bar').style.display = bar ? 'block' : 'none';

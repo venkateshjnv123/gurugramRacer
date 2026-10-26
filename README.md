@@ -17,6 +17,7 @@ Chowk's annual beach.
 | Shift | Brake |
 | Space | Horn (nobody cares, 90% of the time) |
 | Esc | Pause |
+| M | Sound on/off |
 | C | Camera: High / Mid / Close |
 | F (menu) | Delhi-NCR November mode — fog on every mission |
 | R / N / S (result screen) | Retry / Next mission / Share |

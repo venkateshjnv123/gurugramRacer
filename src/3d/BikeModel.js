@@ -41,8 +41,9 @@ export default class BikeModel {
     this.root.position.set(bike.x, 0, bike.y);
     this.root.rotation.y = -bike.heading;
     const speedFrac = Math.min(1, Math.abs(bike.speed) / 160);
-    const targetLean = bike.steer * 0.32 * speedFrac; // lean into the turn
-    this.lean.rotation.x += (targetLean - this.lean.rotation.x) * Math.min(1, dt * 8);
+    const fallen = bike.stun > 0.15;
+    const targetLean = fallen ? 1.2 : bike.steer * 0.4 * speedFrac; // lean into the turn, or lie down after a crash
+    this.lean.rotation.x += (targetLean - this.lean.rotation.x) * Math.min(1, dt * (fallen ? 14 : 8));
     for (const w of this.wheels) w.rotation.z -= (bike.speed / 7.5) * dt;
   }
 }

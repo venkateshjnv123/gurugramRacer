@@ -1,4 +1,4 @@
-import { SPECIALS } from '../config.js';
+import { SPECIALS, BIKE } from '../config.js';
 import { SPECIAL, EVENTS as LINES } from '../data/jokes.js';
 
 // Mission-specific rules: cake meter, chai temperature, guaranteed rain.
@@ -34,6 +34,9 @@ export default class Specials {
     if (this.kind === 'rainAlways' && !this.raining && g.elapsed >= g.limit * SPECIALS.rainAt) {
       this.raining = true;
       g.toast(LINES.rain);
+      g.toast(LINES.rainSlip);
+      g.bike.grip = BIKE.rainGrip;
+      g.traffic.wet = true;
       g.emit('rain');
       g.eventSys.items.forEach((e) => e.start?.());
     }

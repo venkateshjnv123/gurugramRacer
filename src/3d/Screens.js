@@ -1,6 +1,6 @@
 import { MISSIONS } from '../data/missions.js';
 import { JUNCTIONS } from '../data/map.js';
-import { UI, ROASTS, PRAISE } from '../data/jokes.js';
+import { UI, ROASTS, PRAISE, LATE } from '../data/jokes.js';
 import { formatDuration } from '../systems/Clock.js';
 import { getBest, submitBest, worstJunction, load } from '../systems/Save.js';
 import { pick } from '../core/rand.js';
@@ -9,10 +9,12 @@ const nameOf = (id) => JUNCTIONS.find((j) => j.id === id).name;
 
 // Menu, pause and result overlays (HTML). Callbacks are wired by main.js.
 export default class Screens {
-  constructor({ onStart, onToggleFog }) {
+  constructor({ onStart, onToggleFog, onToggleSound, soundOn }) {
     this.el = document.getElementById('screens');
     this.onStart = onStart;
     this.onToggleFog = onToggleFog;
+    this.onToggleSound = onToggleSound;
+    this.soundOn = soundOn;
     this.selected = 0;
   }
 
@@ -37,7 +39,8 @@ export default class Screens {
         <div class="tagline">${UI.tagline}</div>
         <div class="missions">${items}</div>
         <div id="brief" class="brief"></div>
-        <button id="fog" class="link"></button>
+        <button id="fog" class="link"></button><br>
+        <button id="snd" class="link"></button>
         <div class="hint">${UI.menuHint}<br>${UI.controls} · C = camera</div>
       </div>`, 'menu');
     this.el.querySelectorAll('.mission').forEach((b) => {
@@ -45,8 +48,10 @@ export default class Screens {
       b.addEventListener('click', () => this.onStart(MISSIONS[Number(b.dataset.i)].id));
     });
     this.el.querySelector('#fog').addEventListener('click', () => this.onToggleFog());
+    this.el.querySelector('#snd').addEventListener('click', () => this.onToggleSound());
     this.select(selected);
     this.refreshFog();
+    this.refreshSound();
   }
 
   select(i) {
@@ -61,6 +66,11 @@ export default class Screens {
   refreshFog() {
     const el = this.el.querySelector('#fog');
     if (el) el.textContent = UI.fogToggle(load('ncrFog', false));
+  }
+
+  refreshSound() {
+    const el = this.el.querySelector('#snd');
+    if (el) el.textContent = UI.sound(this.soundOn());
   }
 
   pause() {
@@ -79,6 +89,7 @@ export default class Screens {
       r.win ? `<div>${UI.timeTaken(formatDuration(r.taken))}</div>` : '',
       newBest ? `<div class="gold">${UI.newBest}</div>` : '',
       ...(r.extra ?? []).map((e) => `<div class="extra">${e}</div>`),
+      r.lost?.length ? `<div class="late"><b>${LATE.title}</b>${r.lost.slice(0, 4).map((l) => `${LATE.labels[l.cause]}: ${formatDuration(l.seconds)}`).join('<br>')}</div>` : '',
       `<div class="quote">"${pick(r.win ? PRAISE : ROASTS)}"</div>`,
       worst ? `<div class="rage">${UI.rageQuit(nameOf(worst))}</div>` : '',
       `<div class="hint">${UI.retry} · ${UI.next} · <a id="share">${UI.share}</a> · ${UI.menu}</div>`,

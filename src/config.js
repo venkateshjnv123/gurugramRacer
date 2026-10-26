@@ -8,14 +8,18 @@ export const WORLD = {
 
 export const BIKE = {
   maxSpeed: 160,       // px/s on road
-  accel: 150,
-  brake: 350,
-  drag: 110,
+  accel: 190,          // from standstill; fades as speed rises (see accelFade)
+  accelFade: 0.7,      // at top speed accel is (1 - this) of full → ~1.3s to 95%
+  brake: 260,          // Shift / Down: ~0.6s from top speed
+  drag: 70,            // coasting with no keys: ~2.3s to stop
   reverseSpeed: 45,
-  turnRate: 140,       // degrees/s at low speed
-  turnRateFast: 75,    // degrees/s at max speed (calmer, wider turns)
-  steerIn: 6,          // how fast steering ramps to full lock (per s) — 0→1 in ~0.17s
-  steerOut: 10,        // how fast it re-centres when released
+  turnRate: 150,       // degrees/s at low speed
+  turnRateFast: 105,   // degrees/s at max speed → 90° in ~0.9s, radius ~90px
+  steerIn: 12,         // how fast steering ramps to full lock (per s) — 0→1 in ~0.08s
+  steerOut: 14,        // how fast it re-centres when released
+  cornerDrag: 55,      // speed lost per s while leaning hard at speed (tighter corners)
+  assist: 3,           // no keys on a road: heading eases back along the road (per s)...
+  assistAngle: 22,     // ...if within this many degrees of it (tap = lane change, hold = turn)
   galiMultiplier: 0.7, // potholes: slower + camera shake
   radius: 10,          // collision radius vs walls
   wallFriction: 3,     // speed lost per second while pushing into a kerb (scaled by how hard)
@@ -23,6 +27,8 @@ export const BIKE = {
   wallImpact: 0.5,     // speed kept after a near head-on hit
   subStep: 1 / 120,    // physics runs in fixed steps no bigger than this (frame-rate independent)
   kmhPerPx: 60 / 160,  // fake speedo: maxSpeed shows as 60 km/h
+  crashStun: 1.1,      // seconds you're down after hitting a vehicle
+  rainGrip: 0.75,      // steering + braking factor on wet roads
 };
 
 export const TIME = {
@@ -31,8 +37,9 @@ export const TIME = {
 
 // Penalties in REAL seconds (tune against mission pacing)
 export const PENALTY = {
-  crash: 3,
+  crash: 4,
   challan: 10,
+  redLight: 8,  // jumping a red at a signal junction (camera challan)
 };
 
 export const EVENTS = {
@@ -45,7 +52,10 @@ export const EVENTS = {
   gaagluWindow: [0.12, 0.35],
   gaagluDuration: 10,
   waterRadius: 240,
-  waterSpeed: 0.2,
+  waterSpeed: 0.3,        // max speed factor while wading
+  stallSpeed: 70,         // hit water faster than this → engine floods
+  stallTime: 2.5,         // seconds the bike won't move after flooding
+  rainPools: 2,           // extra underpass puddles on the route when it rains
   challanZone: 70,        // half-length of the naka zone along the road
   uturnLength: 1100,      // divider length on Golf Course Road
   solidHitRadius: 8,
@@ -73,8 +83,15 @@ export const STARS = {
 export const TRAFFIC = {
   maxNpcs: 40,
   jamRadius: 400,      // NPCs this close to a red hot junction queue up
-  signalRed: 12,       // real seconds
-  signalGreen: 8,
+  signalGreen: 7,      // real seconds per phase (opposite approaches share a phase)
+  signalAmber: 2,      // red for you lasts (phases - 1) × (green + amber)
+  wetSpeed: 0.75,      // everyone crawls when it rains
+  hotDensity: 2.5,     // extra spawn weight on roads touching a signal junction (jams)
+  lookAhead: 170,      // NPCs watch this far ahead for anything in their path
+  followGap: 12,       // bumper gap they stop at
+  sideMargin: 3,       // extra width when checking if something is in their path
+  weaveAfter: 0.6,     // impatient drivers look for another lane after this long stuck
+  stuckDespawn: 8,     // gridlocked NPCs out of view vanish after this long
   spawnMin: 900,       // spawn ring around the bike (px)
   spawnMax: 2000,
   despawn: 2400,
@@ -87,7 +104,7 @@ export const TRAFFIC = {
     gali: { car: 0.5, auto: 0.5 },
   },
   accel: 120,
-  decel: 320,
+  decel: 420,
   bikeHitRadius: 6,    // bike is narrow: can squeeze between stopped cars
   crashCooldown: 1.2,  // seconds between crash penalties
   hornCooldown: 0.6,

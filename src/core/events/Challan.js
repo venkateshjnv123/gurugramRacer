@@ -30,6 +30,7 @@ export default class Challan {
     if (Math.abs(p.t - this.t) < EVENTS.challanZone && Math.abs(p.n) < this.road.hw) {
       this.caught = true;
       this.sys.game.penalize(PENALTY.challan, LINES.challan);
+      this.sys.game.emit('sfx', 'whistle');
     }
   }
 }

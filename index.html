@@ -20,6 +20,17 @@
       #gps svg { transition: transform 0.12s linear; display: block; margin: 0 auto; }
       #toasts { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; width: min(720px, 90vw); }
       .toast { background: rgba(0,0,0,0.72); padding: 10px 18px; border-radius: 8px; font-size: 20px; font-weight: bold; text-align: center; transition: opacity 0.2s; }
+      #sig { top: 100px; right: 12px; text-align: center; width: 92px; display: none; }
+      #sig .lamps { display: flex; flex-direction: column; align-items: center; gap: 4px; background: #111; border-radius: 8px; padding: 6px 0; width: 34px; margin: 0 auto 6px; }
+      #sig .lamps i { width: 22px; height: 22px; border-radius: 50%; background: #2a2a2a; display: block; }
+      #sig[data-state=red] .red { background: #ff2a2a; box-shadow: 0 0 12px #ff2a2a; }
+      #sig[data-state=amber] .amber { background: #ffb300; box-shadow: 0 0 12px #ffb300; }
+      #sig[data-state=green] .green { background: #2bff6a; box-shadow: 0 0 12px #2bff6a; }
+      #sig-n { font-size: 30px; font-family: monospace; }
+      #sig[data-state=red] #sig-n { color: #ff4d4d; } #sig[data-state=green] #sig-n { color: #2bff6a; } #sig[data-state=amber] #sig-n { color: #ffb300; }
+      #stunned { position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%); font-size: 34px; font-weight: bold; background: rgba(160,20,20,0.75); padding: 10px 22px; border-radius: 10px; display: none; }
+      .late { margin: 12px auto 0; text-align: left; display: inline-block; background: rgba(0,0,0,0.3); padding: 10px 16px; border-radius: 8px; }
+      .late b { display: block; margin-bottom: 4px; }
       #mini { position: absolute; right: 12px; bottom: 12px; border-radius: 6px; }
       #screens { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; color: #fff; background: rgba(10,12,20,0.35); }
       .card { background: rgba(20,22,32,0.88); padding: 28px 40px; border-radius: 16px; text-align: center; max-width: 92vw; }

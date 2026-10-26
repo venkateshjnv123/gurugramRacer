@@ -11,7 +11,7 @@ export const UI = {
   shareFail: (title, url) => `"${title}" mein Gurugram ne mujhe hara diya 😭 Tu kar ke dikha: ${url}`,
   rageQuit: (name) => `Sabse zyada log yahan haare: ${name} 😤`,
   menuHint: '↑ ↓ choose  ·  Enter = chalo',
-  controls: 'Arrows / WASD = chalao  ·  Shift = brake  ·  Space = horn  ·  Esc = pause',
+  controls: 'Arrows / WASD = chalao  ·  Shift = brake  ·  Space = horn  ·  Esc = pause  ·  M = sound',
   best: (t) => `Best: ${t}`,
   noBest: 'Best: abhi tak koi nahi',
   left: (t) => `${t} left`,
@@ -26,6 +26,12 @@ export const UI = {
   start: (from, to) => `${from} → ${to}. Chalo!`,
   timeLow: '2 minute bache hain. Bhaag!',
   penalty: (s) => `−${s} sec`,
+  sigStop: 'RUKO',
+  sigAmber: 'Ruk ja...',
+  sigGo: 'Chalo',
+  stunned: 'Gir gaye! 🤕',
+  stalled: 'Engine band 💧',
+  sound: (on) => `M = Sound: ${on ? 'ON 🔊' : 'OFF 🔇'}`,
   fogToggle: (on) => `F = Delhi-NCR November mode (har mission mein fog): ${on ? 'ON 🌫️' : 'OFF'}`,
 };
 
@@ -60,6 +66,23 @@ export const EVENTS = {
   uturnSign: 'U-TURN 2 KM AAGE →',
   rain: 'Bas 1 baadal tha... 🌧️',
   invisibleTruck: 'Tail light? Bhai budget nahi tha.',
+  redLight: 'Red light jump! Camera ne photo kheech li 📸',
+  stall: 'Engine mein paani chala gaya! Kick maar, kick maar 🦵',
+  rainSlip: 'Road geela hai. Brake soch samajh ke.',
+};
+
+// Result screen: where the time went (cause keys match Game.lost)
+export const LATE = {
+  title: 'Late kyun hua?',
+  labels: {
+    signal: '🚦 Signal pe khade',
+    jam: '🚗 Traffic jam',
+    water: '🌊 Paani mein',
+    cow: '🐄 Gau Mata',
+    crash: '💥 Accidents',
+    challan: '👮 Naka challan',
+    redLight: '📸 Red light camera',
+  },
 };
 
 export const SPECIAL = {

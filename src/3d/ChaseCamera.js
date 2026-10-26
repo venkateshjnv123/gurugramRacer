@@ -33,7 +33,7 @@ export default class ChaseCamera {
     // follow the heading with a little lag so turns feel smooth
     let d = bike.heading - this.yaw;
     d = Math.atan2(Math.sin(d), Math.cos(d));
-    this.yaw += d * Math.min(1, dt * 5);
+    this.yaw += d * Math.min(1, dt * 7);
     const fx = Math.cos(this.yaw);
     const fz = Math.sin(this.yaw);
 
@@ -42,7 +42,7 @@ export default class ChaseCamera {
       this.camera.position.copy(target);
       this.placed = true;
     } else {
-      this.camera.position.lerp(target, Math.min(1, dt * 6));
+      this.camera.position.lerp(target, Math.min(1, dt * 7));
     }
     if (this.shake > 0) {
       this.shake -= dt;

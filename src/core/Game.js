@@ -1,6 +1,6 @@
-import { TIME, STARS, PENALTY, TRAFFIC } from '../config.js';
+import { TIME, STARS, PENALTY, TRAFFIC, BIKE } from '../config.js';
 import { MISSIONS } from '../data/missions.js';
-import { UI, FAIL_REASON, CRASH, HORN } from '../data/jokes.js';
+import { UI, FAIL_REASON, CRASH, HORN, EVENTS as LINES, LATE } from '../data/jokes.js';
 import RoadNet from '../systems/RoadNet.js';
 import BikePhysics from '../objects/BikePhysics.js';
 import { recordFail } from '../systems/Save.js';
@@ -13,7 +13,8 @@ import { pick } from './rand.js';
 export const WIN_RADIUS = 80;
 const RESULT_DELAY = 0.6;
 
-// One mission, engine-free. Emits: toast(text), crash(), honk(result), rain(), pothole(), finish(result).
+// One mission, engine-free. Emits: toast(text), crash(npc), honk(result, npc), rain(), pothole(),
+// redLight(), sfx(name), finish(result).
 export default class Game extends Emitter {
   constructor(missionId, { props = NULL_PROPS, net = new RoadNet(), fog = false } = {}) {
     super();
@@ -35,6 +36,10 @@ export default class Game extends Emitter {
     this.result = null;
     this.warnedLow = false;
     this.hornCooldown = 0;
+    this.lost = Object.fromEntries(Object.keys(LATE.labels).map((k) => [k, 0])); // real seconds, by cause
+    this.inWater = false; // set by the waterlogging event
+    this.lastRoad = null;
+    this.inJunction = null;
 
     this.traffic = new TrafficSystem(net, this.bike, { onCrash: (npc) => this.onCrash(npc) });
     this.eventSys = new EventSystem(this);
@@ -51,8 +56,9 @@ export default class Game extends Emitter {
   }
 
   // Lose real seconds off the clock
-  penalize(realSeconds, text) {
+  penalize(realSeconds, text, cause = 'challan') {
     this.elapsed += realSeconds;
+    this.lost[cause] += realSeconds;
     const p = UI.penalty(realSeconds * TIME.scale);
     this.toast(text ? `${text}  ${p}` : p);
   }
@@ -60,15 +66,18 @@ export default class Game extends Emitter {
   // Hit a vehicle (penalty) or a cow/barrier (no penalty). Either way the cake suffers.
   onCrash(npc, { penalty = true } = {}) {
     if (this.over) return;
-    if (penalty) this.penalize(PENALTY.crash, pick(CRASH));
+    if (penalty) {
+      this.penalize(PENALTY.crash, pick(CRASH), 'crash');
+      this.bike.stun = BIKE.crashStun;
+    }
     this.emit('crash', npc);
   }
 
   honk() {
-    const result = this.traffic.honk();
+    const { result, npc } = this.traffic.honk();
     if (result === 'miracle') this.toast(HORN.miracle);
     else if (result === 'ignored' && Math.random() < 0.35) this.toast(pick(HORN.ignored));
-    this.emit('honk', result);
+    this.emit('honk', result, npc);
   }
 
   // input: { up, down, left, right, brake, horn }
@@ -86,10 +95,12 @@ export default class Game extends Emitter {
     this.elapsed += dt;
     const { pothole } = this.bike.step(dt, input);
     if (pothole) this.emit('pothole');
+    this.checkRedLight();
     this.traffic.update(dt);
     this.eventSys.update(dt);
     this.specials.update(dt);
     if (this.over) return;
+    this.blame(dt);
 
     this.hornCooldown -= dt;
     if (input.horn && this.hornCooldown <= 0) {
@@ -119,8 +130,58 @@ export default class Game extends Emitter {
       taken: Math.round(Math.min(this.elapsed, this.limit) * TIME.scale), // game seconds
       stars,
       extra: this.specials.resultLines(win),
+      lost: Object.entries(this.lost)
+        .map(([cause, s]) => ({ cause, seconds: Math.round(s * TIME.scale) }))
+        .filter((l) => l.seconds >= 10)
+        .sort((a, b) => b.seconds - a.seconds),
     };
     this.resultTimer = win ? RESULT_DELAY : RESULT_DELAY / 2;
+  }
+
+  // Signal on the road you're riding, if you're heading into a signal junction:
+  // { j, state, left, dist } (dist = to the stop line), else null.
+  signalAhead() {
+    const b = this.bike;
+    const road = this.net.roadAt(b.x, b.y);
+    if (!road || this.inJunction) return null;
+    const along = Math.cos(b.heading) * road.dx + Math.sin(b.heading) * road.dy;
+    if (Math.abs(along) < 0.5) return null;
+    const j = along > 0 ? road.b : road.a;
+    if (!j.hot) return null;
+    const { t } = this.net.project(road, b.x, b.y);
+    const dist = (along > 0 ? road.len - t : t) - j.radius;
+    if (dist > 700) return null;
+    return { j, dist, ...this.traffic.light(j, road) };
+  }
+
+  // Entering a signal junction on red = camera challan.
+  checkRedLight() {
+    const b = this.bike;
+    const j = this.net.nearestJunction(b.x, b.y);
+    if (Math.hypot(b.x - j.x, b.y - j.y) > j.radius - 6) {
+      this.lastRoad = this.net.roadAt(b.x, b.y) ?? this.lastRoad;
+      this.inJunction = null;
+      return;
+    }
+    if (this.inJunction === j) return;
+    this.inJunction = j;
+    const road = this.lastRoad;
+    if (!j.hot || !road || (road.a !== j && road.b !== j) || b.speed < 15) return;
+    if (this.traffic.light(j, road).state === 'red') {
+      this.penalize(PENALTY.redLight, LINES.redLight, 'redLight');
+      this.emit('redLight');
+    }
+  }
+
+  // Where did the time go? Every slow second is pinned on whatever is holding you up.
+  blame(dt) {
+    const b = this.bike;
+    if (this.inWater) this.lost.water += dt;
+    if (Math.abs(b.speed) > 30 || b.stun > 0) return;
+    const sig = this.signalAhead();
+    if (sig && sig.state !== 'green' && sig.dist < 300) this.lost.signal += dt;
+    else if (this.eventSys.items.some((e) => e.state === 'waiting')) this.lost.cow += dt;
+    else if (!this.inWater && this.traffic.npcs.some((n) => Math.hypot(n.x - b.x, n.y - b.y) < 90)) this.lost.jam += dt;
   }
 
   // GPS: next junction on the best route. On a road, pick whichever end is cheaper to go via

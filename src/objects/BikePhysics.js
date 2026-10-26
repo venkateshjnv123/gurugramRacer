@@ -15,6 +15,9 @@ export default class BikePhysics {
     this.onWall = false;
     this.steer = 0; // -1..1, eased steering (also leans the 3D model)
     this.potholeCooldown = 0;
+    this.stun = 0;  // crashed: down for a moment, no control
+    this.stall = 0; // engine flooded: no throttle
+    this.grip = 1;  // < 1 on wet roads
   }
 
   get vx() {
@@ -44,12 +47,18 @@ export default class BikePhysics {
     let max = BIKE.maxSpeed * this.speedMultiplier;
     if (this.surface === 'gali') max *= BIKE.galiMultiplier;
 
-    if (input.brake) {
-      this.speed = approach(this.speed, 0, BIKE.brake * dt);
+    if (this.stun > 0 || this.stall > 0) {
+      this.speed = approach(this.speed, 0, (this.stun > 0 ? 400 : 200) * dt);
+      this.stun = Math.max(0, this.stun - dt);
+      this.stall = Math.max(0, this.stall - dt);
+      input = {};
+    } else if (input.brake || (input.down && this.speed > 0)) {
+      this.speed = approach(this.speed, 0, BIKE.brake * this.grip * dt);
     } else if (input.up) {
-      this.speed += BIKE.accel * dt;
+      const fade = this.speed > 0 ? 1 - BIKE.accelFade * Math.min(1, this.speed / BIKE.maxSpeed) : 1;
+      this.speed += BIKE.accel * fade * dt;
     } else if (input.down) {
-      this.speed -= (this.speed > 0 ? BIKE.brake : BIKE.accel) * dt;
+      this.speed -= BIKE.accel * dt;
     } else {
       this.speed = approach(this.speed, 0, BIKE.drag * dt);
     }
@@ -61,9 +70,22 @@ export default class BikePhysics {
     const rate = want === 0 || Math.sign(want) !== Math.sign(this.steer) ? BIKE.steerOut : BIKE.steerIn;
     this.steer = approach(this.steer, want, rate * dt);
     const speedFrac = Math.min(1, Math.abs(this.speed) / BIKE.maxSpeed);
-    const turnRate = BIKE.turnRate + (BIKE.turnRateFast - BIKE.turnRate) * speedFrac;
+    const turnRate = (BIKE.turnRate + (BIKE.turnRateFast - BIKE.turnRate) * speedFrac) * (0.5 + 0.5 * this.grip);
     const grip = Math.min(1, Math.abs(this.speed) / 50) * Math.sign(this.speed);
     this.heading += this.steer * (turnRate * Math.PI / 180) * grip * dt;
+    if (Math.abs(this.steer) > 0.5 && speedFrac > 0.6) this.speed -= BIKE.cornerDrag * Math.abs(this.steer) * dt;
+
+    // hands off on a road: settle back along it, so small corrections don't leave you drifting
+    if (want === 0 && this.speed > 20 && this.surface !== 'junction') {
+      const road = this.net.roadAt(this.x, this.y);
+      if (road) {
+        const along = Math.atan2(road.dy, road.dx);
+        let d = along - this.heading;
+        d = Math.atan2(Math.sin(d), Math.cos(d));
+        if (Math.abs(d) > Math.PI / 2) d = Math.atan2(Math.sin(d + Math.PI), Math.cos(d + Math.PI));
+        if (Math.abs(d) < BIKE.assistAngle * Math.PI / 180) this.heading += d * Math.min(1, BIKE.assist * dt);
+      }
+    }
 
     this.x += this.vx * dt;
     this.y += this.vy * dt;

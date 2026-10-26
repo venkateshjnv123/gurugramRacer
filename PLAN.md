@@ -66,6 +66,17 @@ Everything is still generated in code (boxes, cylinders, canvas textures) — no
 | Night / smog | Dark sky + lit windows + street lamps + bike spotlight; tail lights ignore fog. Delhi-NCR November = thick smog fog |
 | Time limits | Interview 14, Cake 10, Chai 6, Rain 8, Night 7 game-min (tuned with headless bot runs) |
 
+### 1d. Playtest round 2 (2026-10-27) — overrides 1c where they differ
+
+| Area | Decision |
+|---|---|
+| Sound | Done (Phase 7): all Web Audio synthesis, no files. Bike engine (pitch follows speed/throttle), own horn, per-vehicle horns (auto/car/bus/truck/Thar) panned by position, ambient honking that rises in jams and when someone's stuck behind you, crash/pothole/splash/stall/moo/naka whistle/red-light camera, rain + thunder, green-light blip, win jingle / fail wah-wah. M toggles (saved) |
+| Signals | Real phases: opposite approaches share a green, phases take turns green 7s → amber 2s. 3D head on a cantilever arm + eye-level head + countdown box + stop line. HUD shows the signal you're riding into with its countdown. **Jumping a red = camera challan** (8 real s) |
+| Traffic | NPCs avoid anything in their path (rotated-box look-ahead, crossing traffic too), queue at junctions while another turn crosses theirs, curve through junctions, only change lane into a real gap (and never into the bike, except the scripted auto). Junction radius grows for shallow-angle roads so roads don't overlap outside it. Out-of-view gridlock clears itself |
+| Controls | Steering ramps in ~0.08s, 150°/s slow → 105°/s fast (90° in 0.9s at top speed), hands-off realigns you along the road (tap = lane change, hold = turn), accel fades near top speed (~1.3s), brake ~0.6s, coasting ~2.3s |
+| Difficulty | Hard but winnable. Crash = 4s + you fall for 1.1s. Water hit fast = engine floods (2.5s stall); rain adds 2 underpass puddles, wet grip 0.75 and slower traffic. More cars near signal junctions. Result screen shows "Late kyun hua?" (time lost to signals, jams, water, cows, crashes, challans) |
+| Time limits | Interview 17, Cake 10, Chai 5, Rain 9, Night 6 game-min (bot wins ~70%, mostly 1★) |
+
 ---
 
 ## 2. Folder structure
@@ -314,7 +325,7 @@ Run them in order. **Commit after every phase.** Each phase ends with a playable
 
 ✅ Done when: all 5 missions playable at the public link. **Ship it. Post it.**
 
-### Phase 7 (only if time is left) — Sound
+### Phase 7 — Sound ✅ (see §1d)
 > "Add sound using Web Audio generated tones (no files): honk, splash, cow moo-ish beep, win jingle. M toggles mute."
 
 ---
@@ -335,3 +346,4 @@ Run them in order. **Commit after every phase.** Each phase ends with a playable
 - Online leaderboard
 - More vehicles (Activa, Splendor with 3 people, Swiggy rider)
 - Real-ish map import from OpenStreetMap
+- Golf Course Road look (metro on pillars in the median, glass towers), elevated Dwarka-Expressway-style flyover, Cyber Hub walkway with string lights (from playtest photos)

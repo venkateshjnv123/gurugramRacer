@@ -31,5 +31,6 @@ export default class AutoCut {
     npc.laneChangeTimer = Infinity;
     npc.place();
     sys.toast(LINES.auto);
+    sys.game.emit('sfx', 'autoHorn');
   }
 }

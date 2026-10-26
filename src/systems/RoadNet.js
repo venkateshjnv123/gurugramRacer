@@ -27,8 +27,22 @@ export default class RoadNet {
       return road;
     });
 
+    // Junctions are big enough that the roads leaving them have separated by the edge
+    // (shallow-angle roads would otherwise overlap outside the junction and traffic collides).
     for (const j of this.junctions.values()) {
-      j.radius = Math.max(...j.roads.map((r) => r.hw)) + 20;
+      let r = Math.max(...j.roads.map((road) => road.hw)) + 20;
+      const ang = (road) => Math.atan2(this.other(road, j).y - j.y, this.other(road, j).x - j.x);
+      for (const p of j.roads) {
+        for (const q of j.roads) {
+          if (p === q) continue;
+          let th = Math.abs(ang(p) - ang(q));
+          th = Math.min(th, 2 * Math.PI - th);
+          if (th >= Math.PI / 2) continue;
+          const t = (q.hw + p.hw * Math.cos(th)) / Math.sin(th); // where the inner kerbs meet
+          r = Math.max(r, Math.hypot(t, p.hw) + 10);
+        }
+      }
+      j.radius = Math.round(Math.min(r, 320));
     }
   }
 

@@ -137,21 +137,80 @@ export default class World {
     ];
   }
 
+  // Gurugram-style signal: pole on the left kerb, cantilever arm over your lanes with a
+  // red/amber/green head, a second head at eye level, a countdown box and a stop line.
   makeSignal(l) {
     const g = new THREE.Group();
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 44, 6), new THREE.MeshLambertMaterial({ color: 0x333333 }));
-    pole.position.y = 22;
-    const head = new THREE.Mesh(new THREE.BoxGeometry(6, 18, 8), new THREE.MeshLambertMaterial({ color: 0x111111 }));
-    head.position.y = 50;
-    const red = new THREE.Mesh(new THREE.SphereGeometry(3, 8, 6), new THREE.MeshBasicMaterial({ color: 0xff2222, fog: false }));
-    const green = new THREE.Mesh(new THREE.SphereGeometry(3, 8, 6), new THREE.MeshBasicMaterial({ color: 0x22ff55, fog: false }));
-    red.position.set(3.5, 55, 0);
-    green.position.set(3.5, 45, 0);
-    g.add(pole, head, red, green);
+    const metal = new THREE.MeshLambertMaterial({ color: 0x4a4f55 });
+    const black = new THREE.MeshLambertMaterial({ color: 0x15171a });
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(2, 2.4, 70, 8), metal);
+    pole.position.y = 35;
+    const armLen = l.hw * 0.75;
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(3, 3, armLen), metal);
+    arm.position.set(0, 68, -armLen / 2);
+    const stripe = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 10, 8), new THREE.MeshLambertMaterial({ color: 0xf1c40f }));
+    stripe.position.y = 8;
+    g.add(pole, arm, stripe);
+
+    const lamps = { red: [], amber: [], green: [] };
+    const head = (z, y, scale) => {
+      const box = new THREE.Mesh(new THREE.BoxGeometry(7 * scale, 26 * scale, 9 * scale), black);
+      box.position.set(0, y, z);
+      g.add(box);
+      [['red', 8], ['amber', 0], ['green', -8]].forEach(([c, dy]) => {
+        const lamp = new THREE.Mesh(new THREE.CircleGeometry(3 * scale, 14).rotateY(Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x222222, fog: false }));
+        lamp.position.set(3.6 * scale, y + dy * scale, z);
+        g.add(lamp);
+        lamps[c].push(lamp);
+        const visor = new THREE.Mesh(new THREE.BoxGeometry(4 * scale, 0.8, 7 * scale), black);
+        visor.position.set(5.5 * scale, y + dy * scale + 3.4 * scale, z);
+        g.add(visor);
+      });
+    };
+    head(-armLen + 6, 54, 1.2);
+    head(-4, 30, 1);
+
+    // countdown box next to the overhead head
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 40;
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const timer = new THREE.Mesh(new THREE.PlaneGeometry(14, 9).rotateY(Math.PI / 2), new THREE.MeshBasicMaterial({ map: tex, fog: false }));
+    timer.position.set(4.5, 54, -armLen + 20);
+    const timerBack = new THREE.Mesh(new THREE.BoxGeometry(5, 11, 16), black);
+    timerBack.position.set(1.5, 54, -armLen + 20);
+    g.add(timerBack, timer);
+
+    // stop line across the incoming lanes
+    const stop = new THREE.Mesh(new THREE.PlaneGeometry(6, l.hw - 6).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xf2f2f2 }));
+    stop.position.set(0, 0.6, -12 - l.hw / 2);
+    g.add(stop);
+
     g.position.set(l.x, 0, l.y);
     g.rotation.y = -l.facing;
     this.dynamic.add(g);
-    return { red, green };
+    return { road: l.road, lamps, canvas, tex, shown: null };
+  }
+
+  updateSignal(view, light) {
+    const on = { red: 0xff2a2a, amber: 0xffb300, green: 0x2bff6a };
+    for (const c of ['red', 'amber', 'green']) {
+      for (const lamp of view.lamps[c]) lamp.material.color.setHex(light.state === c ? on[c] : 0x222222);
+    }
+    const n = Math.min(99, Math.ceil(light.left));
+    const key = `${light.state}${n}`;
+    if (view.shown === key) return;
+    view.shown = key;
+    const ctx = view.canvas.getContext('2d');
+    ctx.fillStyle = '#050505';
+    ctx.fillRect(0, 0, 64, 40);
+    ctx.fillStyle = light.state === 'green' ? '#2bff6a' : light.state === 'amber' ? '#ffb300' : '#ff2a2a';
+    ctx.font = 'bold 34px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(n).padStart(2, '0'), 32, 22);
+    view.tex.needsUpdate = true;
   }
 
   horn() {
@@ -187,11 +246,7 @@ export default class World {
     if (game) {
       this.syncNpcs(game);
       for (const sv of this.signalViews) {
-        const red = game.traffic.isRed(sv.j);
-        for (const l of sv.lights) {
-          l.red.material.color.setHex(red ? 0xff2222 : 0x3a0a0a);
-          l.green.material.color.setHex(red ? 0x0a3a14 : 0x22ff55);
-        }
+        for (const l of sv.lights) this.updateSignal(l, game.traffic.light(sv.j, l.road));
       }
       this.props.update(dt);
       this.bikeModel.sync(game.bike, dt);

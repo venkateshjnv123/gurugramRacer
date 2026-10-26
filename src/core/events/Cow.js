@@ -44,6 +44,7 @@ export default class Cow {
       this.state = 'waiting';
       this.timer = EVENTS.cowWait;
       this.sys.toast(LINES.cow);
+      this.sys.game.emit('sfx', 'moo');
     } else if (this.state === 'waiting') {
       this.timer -= dt;
       if (this.timer <= 0) this.leave();
