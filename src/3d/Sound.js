@@ -109,12 +109,13 @@ export default class Sound {
     const throttle = input.up && !dead ? 1 : 0;
 
     if (this.engine) {
-      // single-cylinder thump: firing rate follows speed, brighter on throttle
-      const f = 24 + frac * 52 + throttle * 6;
-      this.engine.osc.frequency.setTargetAtTime(f, t, 0.08);
-      this.engine.sub.frequency.setTargetAtTime(f / 2, t, 0.08);
-      this.engine.filter.frequency.setTargetAtTime(320 + frac * 900 + throttle * 450, t, 0.1);
-      this.engine.gain.gain.setTargetAtTime(dead ? 0 : 0.1 + frac * 0.06 + throttle * 0.05, t, dead ? 0.05 : 0.12);
+      // soft low hum under everything else: pitch follows speed, a gentle putt-putt on top
+      const f = 38 + frac * 70;
+      this.engine.osc.frequency.setTargetAtTime(f, t, 0.15);
+      this.engine.sub.frequency.setTargetAtTime(f / 2, t, 0.15);
+      this.engine.lfo.frequency.setTargetAtTime(6 + frac * 14, t, 0.15);
+      this.engine.filter.frequency.setTargetAtTime(160 + frac * 260 + throttle * 80, t, 0.2);
+      this.engine.gain.gain.setTargetAtTime(dead ? 0 : 0.018 + frac * 0.022 + throttle * 0.008, t, dead ? 0.05 : 0.25);
     }
 
     // signal turned green while you're waiting at it
@@ -296,41 +297,42 @@ export default class Sound {
     if (this.engine || !this.ctx) return;
     const ctx = this.ctx;
     const osc = ctx.createOscillator();
-    osc.type = 'sawtooth';
-    osc.frequency.value = 24;
+    osc.type = 'triangle';
+    osc.frequency.value = 38;
     const sub = ctx.createOscillator();
-    sub.type = 'square';
-    sub.frequency.value = 12;
+    sub.type = 'sine';
+    sub.frequency.value = 19;
     const subGain = ctx.createGain();
-    subGain.gain.value = 0.6;
-    const shaper = ctx.createWaveShaper();
-    const curve = new Float32Array(256);
-    for (let i = 0; i < 256; i++) {
-      const x = (i / 255) * 2 - 1;
-      curve[i] = Math.tanh(x * 2.5);
-    }
-    shaper.curve = curve;
+    subGain.gain.value = 0.8;
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = 400;
-    filter.Q.value = 2;
+    filter.frequency.value = 200;
+    filter.Q.value = 0.5;
+    // putt-putt: slow tremolo on the hum
+    const putt = ctx.createGain();
+    putt.gain.value = 0.7;
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 6;
+    const depth = ctx.createGain();
+    depth.gain.value = 0.3;
+    lfo.connect(depth).connect(putt.gain);
     const gain = ctx.createGain();
     gain.gain.value = 0;
-    osc.connect(shaper);
-    sub.connect(subGain).connect(shaper);
-    shaper.connect(filter).connect(gain).connect(this.master);
+    osc.connect(filter);
+    sub.connect(subGain).connect(filter);
+    filter.connect(putt).connect(gain).connect(this.master);
     osc.start();
     sub.start();
-    this.engine = { osc, sub, filter, gain };
+    lfo.start();
+    this.engine = { osc, sub, lfo, filter, gain };
   }
 
   stopEngine() {
     if (!this.engine) return;
-    const { osc, sub, gain } = this.engine;
+    const { osc, sub, lfo, gain } = this.engine;
     const t = this.ctx.currentTime;
     gain.gain.setTargetAtTime(0, t, 0.05);
-    osc.stop(t + 0.3);
-    sub.stop(t + 0.3);
+    for (const o of [osc, sub, lfo]) o.stop(t + 0.3);
     this.engine = null;
   }
 
